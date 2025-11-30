@@ -1,86 +1,43 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Input } from "../components/Input";
-import { Button } from "../components/Button";
 import { getErrorMessage } from "../utils/api";
 
-/**
- * Registration page component.
- *
- * Allows new users to create an account.
- */
 export function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  // Form fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  // Form state
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  /**
-   * Validate form fields.
-   *
-   * @returns true if valid, false otherwise
-   */
-  const validateForm = (): boolean => {
-    const errors: Record<string, string> = {};
-
-    // Name validation
-    if (!name || name.trim().length < 2) {
-      errors.name = "Name must be at least 2 characters";
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
-      errors.email = "Please enter a valid email address";
-    }
-
-    // Password validation
-    if (!password || password.length < 6) {
-      errors.password = "Password must be at least 6 characters";
-    }
-
-    // Confirm password validation
-    if (password !== confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  /**
-   * Handle form submission.
-   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Clear previous errors
     setError("");
-    setFieldErrors({});
 
-    // Validate
-    if (!validateForm()) {
+    if (!name || !email || !password || !confirmPassword) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Call register function from auth context
       await register({ name, email, password });
-
-      // Success! Navigate to dashboard
       navigate("/dashboard");
     } catch (err) {
       setError(getErrorMessage(err));
@@ -90,86 +47,206 @@ export function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Create Account 🚀
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#0B0F19",
+        padding: "24px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "400px",
+          width: "100%",
+          background: "#161B26",
+          padding: "40px",
+          borderRadius: "12px",
+          border: "1px solid #2D3748",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div className="nav-icon" style={{ margin: "0 auto 16px" }}>
+            W
+          </div>
+          <h1
+            style={{
+              fontSize: "28px",
+              fontWeight: "bold",
+              color: "#F7F4ED",
+              marginBottom: "8px",
+            }}
+          >
+            Create Account
           </h1>
-          <p className="text-gray-600">Join WeavThru Resume today</p>
+          <p style={{ color: "#C9C5BA" }}>
+            Start optimizing your resume with AI
+          </p>
         </div>
 
-        {/* Error Alert */}
         {error && (
-          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div
+            style={{
+              background: "#7F1D1D",
+              color: "#FEE2E2",
+              padding: "12px",
+              borderRadius: "8px",
+              marginBottom: "24px",
+              fontSize: "14px",
+            }}
+          >
             {error}
           </div>
         )}
 
-        {/* Registration Form */}
         <form onSubmit={handleSubmit}>
-          {/* Name Input */}
-          <Input
-            label="Full Name"
-            type="text"
-            placeholder="John Doe"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            error={fieldErrors.name}
-            required
-          />
+          <div style={{ marginBottom: "20px" }}>
+            <label
+              style={{
+                display: "block",
+                color: "#F7F4ED",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: "500",
+              }}
+            >
+              Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "#0B0F19",
+                border: "1px solid #2D3748",
+                borderRadius: "8px",
+                color: "#F7F4ED",
+                fontSize: "14px",
+              }}
+              placeholder="Your name"
+            />
+          </div>
 
-          {/* Email Input */}
-          <Input
-            label="Email"
-            type="email"
-            placeholder="your.email@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={fieldErrors.email}
-            required
-          />
+          <div style={{ marginBottom: "20px" }}>
+            <label
+              style={{
+                display: "block",
+                color: "#F7F4ED",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: "500",
+              }}
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "#0B0F19",
+                border: "1px solid #2D3748",
+                borderRadius: "8px",
+                color: "#F7F4ED",
+                fontSize: "14px",
+              }}
+              placeholder="your.email@example.com"
+            />
+          </div>
 
-          {/* Password Input */}
-          <Input
-            label="Password"
-            type="password"
-            placeholder="At least 6 characters"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={fieldErrors.password}
-            required
-          />
+          <div style={{ marginBottom: "20px" }}>
+            <label
+              style={{
+                display: "block",
+                color: "#F7F4ED",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: "500",
+              }}
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "#0B0F19",
+                border: "1px solid #2D3748",
+                borderRadius: "8px",
+                color: "#F7F4ED",
+                fontSize: "14px",
+              }}
+              placeholder="At least 6 characters"
+            />
+          </div>
 
-          {/* Confirm Password Input */}
-          <Input
-            label="Confirm Password"
-            type="password"
-            placeholder="Re-enter your password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            error={fieldErrors.confirmPassword}
-            required
-          />
+          <div style={{ marginBottom: "24px" }}>
+            <label
+              style={{
+                display: "block",
+                color: "#F7F4ED",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: "500",
+              }}
+            >
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "#0B0F19",
+                border: "1px solid #2D3748",
+                borderRadius: "8px",
+                color: "#F7F4ED",
+                fontSize: "14px",
+              }}
+              placeholder="Confirm your password"
+            />
+          </div>
 
-          {/* Submit Button */}
-          <Button type="submit" className="w-full" isLoading={isLoading}>
-            Create Account
-          </Button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn btn-primary btn-large"
+            style={{ width: "100%" }}
+          >
+            {isLoading ? "Creating account..." : "Create Account"}
+          </button>
         </form>
 
-        {/* Login Link */}
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-blue-500 hover:text-blue-600 font-semibold"
-            >
-              Sign in
-            </Link>
-          </p>
+        <div
+          style={{
+            marginTop: "24px",
+            textAlign: "center",
+            color: "#C9C5BA",
+            fontSize: "14px",
+          }}
+        >
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            style={{
+              color: "#5B9FFF",
+              textDecoration: "none",
+              fontWeight: "500",
+            }}
+          >
+            Sign in
+          </Link>
         </div>
       </div>
     </div>

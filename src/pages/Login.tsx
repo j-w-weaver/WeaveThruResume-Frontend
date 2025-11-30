@@ -1,155 +1,180 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Input } from "../components/Input";
-import { Button } from "../components/Button";
 import { getErrorMessage } from "../utils/api";
 
-/**
- * Login page component.
- *
- * Allows users to log in with email and password.
- */
 export function Login() {
-  // ============================================
-  // HOOKS
-  // ============================================
-
-  /**
-   * Get auth functions from context.
-   * Like dependency injection in C#.
-   */
   const { login } = useAuth();
-
-  /**
-   * useNavigate hook - for programmatic navigation.
-   *
-   * C# equivalent:
-   * NavigationManager.NavigateTo("/dashboard");
-   */
   const navigate = useNavigate();
 
-  // ============================================
-  // STATE
-  // ============================================
-
-  /**
-   * Form fields state.
-   * Like having properties with INotifyPropertyChanged in C#.
-   */
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  /**
-   * Form state.
-   */
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ============================================
-  // EVENT HANDLERS
-  // ============================================
-
-  /**
-   * Handle form submission.
-   *
-   * @param e - Form event
-   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    // Prevent default form submission (page refresh)
     e.preventDefault();
-
-    // Clear previous errors
     setError("");
 
-    // Validate
     if (!email || !password) {
       setError("Please fill in all fields");
       return;
     }
 
-    // Start loading
     setIsLoading(true);
 
     try {
-      // Call login function from auth context
       await login({ email, password });
-
-      // Success! Navigate to dashboard
       navigate("/dashboard");
     } catch (err) {
-      // Handle error
       setError(getErrorMessage(err));
     } finally {
-      // Stop loading (runs whether success or error)
       setIsLoading(false);
     }
   };
 
-  // ============================================
-  // RENDER
-  // ============================================
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Welcome Back! 👋
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#0B0F19",
+        padding: "24px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "400px",
+          width: "100%",
+          background: "#161B26",
+          padding: "40px",
+          borderRadius: "12px",
+          border: "1px solid #2D3748",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div className="nav-icon" style={{ margin: "0 auto 16px" }}>
+            W
+          </div>
+          <h1
+            style={{
+              fontSize: "28px",
+              fontWeight: "bold",
+              color: "#F7F4ED",
+              marginBottom: "8px",
+            }}
+          >
+            Welcome Back
           </h1>
-          <p className="text-gray-600">
-            Sign in to continue to WeavThru Resume
-          </p>
+          <p style={{ color: "#C9C5BA" }}>Sign in to continue to Resume</p>
         </div>
 
-        {/* Error Alert */}
         {error && (
-          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div
+            style={{
+              background: "#7F1D1D",
+              color: "#FEE2E2",
+              padding: "12px",
+              borderRadius: "8px",
+              marginBottom: "24px",
+              fontSize: "14px",
+            }}
+          >
             {error}
           </div>
         )}
 
-        {/* Login Form */}
         <form onSubmit={handleSubmit}>
-          {/* Email Input */}
-          <Input
-            label="Email"
-            type="email"
-            placeholder="your.email@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <div style={{ marginBottom: "20px" }}>
+            <label
+              style={{
+                display: "block",
+                color: "#F7F4ED",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: "500",
+              }}
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "#0B0F19",
+                border: "1px solid #2D3748",
+                borderRadius: "8px",
+                color: "#F7F4ED",
+                fontSize: "14px",
+              }}
+              placeholder="your.email@example.com"
+            />
+          </div>
 
-          {/* Password Input */}
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div style={{ marginBottom: "24px" }}>
+            <label
+              style={{
+                display: "block",
+                color: "#F7F4ED",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: "500",
+              }}
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "#0B0F19",
+                border: "1px solid #2D3748",
+                borderRadius: "8px",
+                color: "#F7F4ED",
+                fontSize: "14px",
+              }}
+              placeholder="Enter your password"
+            />
+          </div>
 
-          {/* Submit Button */}
-          <Button type="submit" className="w-full" isLoading={isLoading}>
-            Sign In
-          </Button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn btn-primary btn-large"
+            style={{ width: "100%" }}
+          >
+            {isLoading ? "Signing in..." : "Sign In"}
+          </button>
         </form>
 
-        {/* Register Link */}
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Don't have an account?{" "}
-            <Link
-              to="/register"
-              className="text-blue-500 hover:text-blue-600 font-semibold"
-            >
-              Sign up
-            </Link>
-          </p>
+        <div
+          style={{
+            marginTop: "24px",
+            textAlign: "center",
+            color: "#C9C5BA",
+            fontSize: "14px",
+          }}
+        >
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            style={{
+              color: "#5B9FFF",
+              textDecoration: "none",
+              fontWeight: "500",
+            }}
+          >
+            Sign up
+          </Link>
         </div>
       </div>
     </div>
