@@ -211,17 +211,46 @@
 }
 
 /* Responsive */
+/* Responsive */
+@media (max-width: 1024px) {
+  .upload-header,
+  .upload-content {
+    padding: 24px 32px;
+  }
+}
+
 @media (max-width: 768px) {
   .upload-main {
     margin-left: 0;
   }
 
-  .upload-header,
+  .upload-header {
+    padding: 20px 20px 20px 60px; /* Extra left padding for mobile menu button */
+  }
+
   .upload-content {
-    padding: 24px 20px;
+    padding: 20px;
   }
 
   .upload-dropzone {
     padding: 40px 20px;
+  }
+
+  .upload-actions {
+    flex-direction: column-reverse;
+  }
+
+  .upload-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-header {
+    padding: 16px 16px 16px 56px;
+  }
+
+  .upload-content {
+    padding: 16px;
   }
 }

@@ -1,0 +1,240 @@
+/* Add Job Page */
+.add-job-page {
+  display: flex;
+  min-height: 100vh;
+  background: #0b0f19;
+}
+
+.add-job-main {
+  flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
+}
+
+.add-job-header {
+  padding: 32px 48px;
+  border-bottom: 1px solid #2d3748;
+}
+
+.add-job-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #9a9891;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 16px;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.add-job-back:hover {
+  color: #f7f4ed;
+}
+
+.add-job-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #f7f4ed;
+  margin-bottom: 6px;
+}
+
+.add-job-header p {
+  color: #9a9891;
+  font-size: 15px;
+}
+
+.add-job-content {
+  padding: 32px 48px;
+  max-width: 900px;
+}
+
+/* Form Styles */
+.add-job-form {
+  background: #161b26;
+  border: 1px solid #2d3748;
+  border-radius: 10px;
+  padding: 32px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  color: #f7f4ed;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.form-label-required::after {
+  content: " *";
+  color: #ef4444;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0b0f19;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  color: #f7f4ed;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #5b9fff;
+  box-shadow: 0 0 0 3px rgba(91, 159, 255, 0.1);
+}
+
+.form-input::placeholder {
+  color: #6b6960;
+}
+
+.form-textarea {
+  min-height: 200px;
+  resize: vertical;
+  font-family: "Courier New", monospace;
+  line-height: 1.6;
+}
+
+.form-hint {
+  display: block;
+  color: #9a9891;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  color: #6b6960;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.char-count.warning {
+  color: #f59e0b;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #2d3748;
+}
+
+.form-actions .btn {
+  flex: 1;
+}
+
+/* Help Section */
+.add-job-help {
+  background: #161b26;
+  border: 1px solid #2d3748;
+  border-radius: 10px;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.add-job-help h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f7f4ed;
+  margin-bottom: 12px;
+}
+
+.add-job-help ul {
+  list-style: none;
+  padding: 0;
+}
+
+.add-job-help li {
+  color: #9a9891;
+  font-size: 14px;
+  padding: 8px 0;
+  padding-left: 24px;
+  position: relative;
+}
+
+.add-job-help li::before {
+  content: "•";
+  position: absolute;
+  left: 8px;
+  color: #5b9fff;
+}
+
+/* Alert Messages */
+.alert {
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.alert-error {
+  background: #7f1d1d;
+  color: #fee2e2;
+  border: 1px solid #991b1b;
+}
+
+.alert-success {
+  background: #14532d;
+  color: #d1fae5;
+  border: 1px solid #166534;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .add-job-header,
+  .add-job-content {
+    padding: 24px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .add-job-main {
+    margin-left: 0;
+  }
+
+  .add-job-header {
+    padding: 20px 20px 20px 60px;
+  }
+
+  .add-job-content {
+    padding: 20px;
+  }
+
+  .add-job-form {
+    padding: 24px 20px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-job-header {
+    padding: 16px 16px 16px 56px;
+  }
+
+  .add-job-form {
+    padding: 20px 16px;
+  }
+}

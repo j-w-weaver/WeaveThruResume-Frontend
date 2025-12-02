@@ -1,17 +1,17 @@
-/* Resume List Page */
-.resume-list-page {
+/* Job List Page */
+.job-list-page {
   display: flex;
   min-height: 100vh;
   background: #0b0f19;
 }
 
-.resume-list-main {
+.job-list-main {
   flex: 1;
   margin-left: 240px;
   min-height: 100vh;
 }
 
-.resume-list-header {
+.job-list-header {
   padding: 32px 48px;
   border-bottom: 1px solid #2d3748;
   display: flex;
@@ -19,54 +19,56 @@
   align-items: center;
 }
 
-.resume-list-header-content h1 {
+.job-list-header-content h1 {
   font-size: 28px;
   font-weight: 600;
   color: #f7f4ed;
   margin-bottom: 6px;
 }
 
-.resume-list-header-content p {
+.job-list-header-content p {
   color: #9a9891;
   font-size: 15px;
 }
 
-.resume-list-content {
+.job-list-content {
   padding: 32px 48px;
   max-width: 1400px;
 }
 
-/* Resume Cards Grid */
-.resume-grid {
+/* Job Cards Grid */
+.job-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 20px;
 }
 
-.resume-card {
+.job-card {
   background: #161b26;
   border: 1px solid #2d3748;
   border-radius: 10px;
   padding: 24px;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
-.resume-card:hover {
+.job-card:hover {
   border-color: #5b9fff;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.resume-card-header {
+.job-card-header {
   display: flex;
   gap: 16px;
   margin-bottom: 16px;
 }
 
-.resume-file-icon {
+.job-company-icon {
   width: 48px;
   height: 48px;
   border-radius: 8px;
+  background: linear-gradient(135deg, #10b981, #059669);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,43 +76,52 @@
   flex-shrink: 0;
 }
 
-.resume-file-icon.pdf {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.resume-file-icon.docx {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.resume-card-info {
+.job-card-info {
   flex: 1;
   min-width: 0;
 }
 
-.resume-card-title {
+.job-card-title {
   font-size: 16px;
   font-weight: 600;
   color: #f7f4ed;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.resume-card-meta {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
+.job-card-company {
+  font-size: 14px;
   color: #9a9891;
-}
-
-.resume-card-meta span {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
-.resume-card-preview {
+.job-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.job-card-status.saved {
+  background: #1e3a8a;
+  color: #93c5fd;
+}
+
+.job-card-status.applied {
+  background: #14532d;
+  color: #86efac;
+}
+
+.job-card-preview {
   background: #0b0f19;
   border-radius: 6px;
   padding: 12px;
@@ -119,7 +130,7 @@
   overflow: hidden;
 }
 
-.resume-card-preview p {
+.job-card-preview p {
   font-size: 12px;
   color: #9a9891;
   line-height: 1.5;
@@ -129,19 +140,66 @@
   overflow: hidden;
 }
 
-.resume-card-actions {
+.job-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #2d3748;
+}
+
+.job-card-date {
+  font-size: 12px;
+  color: #6b6960;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.job-card-actions {
   display: flex;
   gap: 8px;
 }
 
-.resume-card-actions .btn {
-  flex: 1;
-  padding: 8px 16px;
-  font-size: 13px;
+.job-card-action-btn {
+  background: transparent;
+  border: 1px solid #2d3748;
+  color: #9a9891;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.job-card-action-btn:hover {
+  border-color: #5b9fff;
+  color: #f7f4ed;
+  background: #1e2533;
+}
+
+.job-card-action-btn.primary {
+  background: #5b9fff;
+  border-color: #5b9fff;
+  color: white;
+}
+
+.job-card-action-btn.primary:hover {
+  background: #7bb3ff;
+}
+
+.job-card-action-btn.danger {
+  border-color: #7f1d1d;
+  color: #fee2e2;
+}
+
+.job-card-action-btn.danger:hover {
+  background: #7f1d1d;
+  border-color: #991b1b;
 }
 
 /* Empty State */
-.resume-empty {
+.job-empty {
   background: #161b26;
   border: 1px solid #2d3748;
   border-radius: 10px;
@@ -149,27 +207,27 @@
   text-align: center;
 }
 
-.resume-empty-icon {
+.job-empty-icon {
   font-size: 64px;
   margin-bottom: 20px;
   opacity: 0.5;
 }
 
-.resume-empty h2 {
+.job-empty h2 {
   font-size: 24px;
   font-weight: 600;
   color: #f7f4ed;
   margin-bottom: 12px;
 }
 
-.resume-empty p {
+.job-empty p {
   color: #9a9891;
   font-size: 15px;
   margin-bottom: 24px;
 }
 
 /* Loading State */
-.resume-loading {
+.job-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -177,7 +235,7 @@
   min-height: 400px;
 }
 
-.resume-loading-spinner {
+.job-loading-spinner {
   width: 48px;
   height: 48px;
   border: 3px solid #2d3748;
@@ -187,93 +245,58 @@
   margin-bottom: 16px;
 }
 
-.resume-loading p {
+.job-loading p {
   color: #9a9891;
   font-size: 15px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Responsive */
 @media (max-width: 1024px) {
-  .resume-list-header,
-  .resume-list-content {
+  .job-list-header,
+  .job-list-content {
     padding: 24px 32px;
   }
 
-  .resume-grid {
+  .job-grid {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .resume-list-main {
+  .job-list-main {
     margin-left: 0;
   }
 
-  .resume-list-header {
-    padding: 20px 20px 20px 60px; /* Extra left padding for mobile menu button */
+  .job-list-header {
+    padding: 20px 20px 20px 60px;
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
 
-  .resume-list-header button {
-    width: 100%;
-  }
-
-  .resume-list-content {
+  .job-list-content {
     padding: 20px;
   }
 
-  .resume-grid {
+  .job-grid {
     grid-template-columns: 1fr;
-  }
-
-  .resume-card {
-    padding: 20px 16px;
-  }
-
-  .resume-card-actions {
-    flex-wrap: wrap;
-  }
-
-  .resume-card-actions .btn {
-    flex: 1;
-    min-width: 120px;
-    font-size: 12px;
-    padding: 8px 12px;
   }
 }
 
 @media (max-width: 480px) {
-  .resume-list-header {
+  .job-list-header {
     padding: 16px 16px 16px 56px;
   }
 
-  .resume-card-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .job-card {
+    padding: 20px 16px;
   }
 
-  .resume-file-icon {
-    align-self: center;
-  }
-
-  .resume-card-meta {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .resume-card-actions {
-    flex-direction: column;
-  }
-
-  .resume-card-actions .btn {
+  .job-card-actions {
     width: 100%;
+  }
+
+  .job-card-action-btn {
+    flex: 1;
   }
 }

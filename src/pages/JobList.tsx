@@ -1,18 +1,18 @@
-import "./resumeList.css";
+import "./jobList.css";
 import "../dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import resumeService from "../services/resumeService";
+import jobService from "../services/jobService";
 import { getErrorMessage } from "../utils/api";
-import type { Resume } from "../types";
+import type { Job } from "../types";
 
-export function ResumeList() {
+export function JobList() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -25,22 +25,46 @@ export function ResumeList() {
     { name: "Analysis", path: "/analyses", icon: "📊" },
   ];
 
-  // Load resumes on mount
+  // Load jobs on mount
   useEffect(() => {
-    loadResumes();
+    loadJobs();
   }, []);
 
-  const loadResumes = async () => {
+  const loadJobs = async () => {
     setIsLoading(true);
     setError("");
 
     try {
-      const data = await resumeService.getMyResumes();
-      setResumes(data);
+      const data = await jobService.getMyJobs();
+      setJobs(data);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number, jobTitle: string) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete "${jobTitle}" at ${
+          jobs.find((j) => j.id === id)?.companyName
+        }?`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingId(id);
+
+    try {
+      await jobService.delete(id);
+      setJobs(jobs.filter((j) => j.id !== id));
+      console.log("✅ Job deleted");
+    } catch (err) {
+      alert(getErrorMessage(err));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -49,46 +73,31 @@ export function ResumeList() {
     setIsMobileMenuOpen(false);
   };
 
-  const handleDelete = async (id: number, fileName: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${fileName}"?`)) {
-      return;
-    }
-
-    setDeletingId(id);
-
-    try {
-      await resumeService.delete(id);
-      setResumes(resumes.filter((r) => r.id !== id));
-      console.log("✅ Resume deleted");
-    } catch (err) {
-      alert(getErrorMessage(err));
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+
     return date.toLocaleDateString("en-US", {
-      year: "numeric",
       month: "short",
       day: "numeric",
+      year: "numeric",
     });
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-  };
-
-  const getFileType = (contentType: string): "pdf" | "docx" => {
-    if (contentType.includes("pdf")) return "pdf";
-    return "docx";
+  const truncateText = (text: string, maxLength: number): string => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
   };
 
   return (
-    <div className="resume-list-page">
+    <div className="job-list-page">
       {/* Mobile Menu Button */}
       <button
         className="mobile-menu-btn"
@@ -176,26 +185,26 @@ export function ResumeList() {
       </aside>
 
       {/* Main Content */}
-      <main className="resume-list-main">
-        <div className="resume-list-header">
-          <div className="resume-list-header-content">
-            <h1>My Resumes</h1>
-            <p>View and manage your uploaded resumes</p>
+      <main className="job-list-main">
+        <div className="job-list-header">
+          <div className="job-list-header-content">
+            <h1>Job Descriptions</h1>
+            <p>Manage and analyze job postings</p>
           </div>
           <button
-            onClick={() => navigate("/upload-resume")}
+            onClick={() => navigate("/add-job")}
             className="btn btn-primary"
           >
-            Upload Resume
+            Add Job Description
           </button>
         </div>
 
-        <div className="resume-list-content">
+        <div className="job-list-content">
           {/* Loading State */}
           {isLoading && (
-            <div className="resume-loading">
-              <div className="resume-loading-spinner"></div>
-              <p>Loading resumes...</p>
+            <div className="job-loading">
+              <div className="job-loading-spinner"></div>
+              <p>Loading jobs...</p>
             </div>
           )}
 
@@ -205,83 +214,76 @@ export function ResumeList() {
           )}
 
           {/* Empty State */}
-          {!isLoading && !error && resumes.length === 0 && (
-            <div className="resume-empty">
-              <div className="resume-empty-icon">📄</div>
-              <h2>No resumes yet</h2>
+          {!isLoading && !error && jobs.length === 0 && (
+            <div className="job-empty">
+              <div className="job-empty-icon">💼</div>
+              <h2>No job descriptions yet</h2>
               <p>
-                Upload your first resume to get started with AI-powered
-                optimization
+                Add your first job posting to start analyzing against your
+                resume
               </p>
               <button
-                onClick={() => navigate("/upload-resume")}
+                onClick={() => navigate("/add-job")}
                 className="btn btn-primary btn-large"
               >
-                Upload Your First Resume
+                Add Your First Job
               </button>
             </div>
           )}
 
-          {/* Resume Grid */}
-          {!isLoading && !error && resumes.length > 0 && (
-            <div className="resume-grid">
-              {resumes.map((resume) => (
-                <div key={resume.id} className="resume-card">
-                  <div className="resume-card-header">
+          {/* Job Grid */}
+          {!isLoading && !error && jobs.length > 0 && (
+            <div className="job-grid">
+              {jobs.map((job) => (
+                <div
+                  key={job.id}
+                  className="job-card"
+                  onClick={() => navigate(`/job/${job.id}`)}
+                >
+                  <div className="job-card-header">
+                    <div className="job-company-icon">💼</div>
+                    <div className="job-card-info">
+                      <div className="job-card-title" title={job.jobTitle}>
+                        {job.jobTitle}
+                      </div>
+                      <div className="job-card-company">
+                        🏢 {job.companyName}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="job-card-preview">
+                    <p>{truncateText(job.jobDescriptionPreview, 150)}</p>
+                  </div>
+
+                  <div className="job-card-meta">
+                    <div className="job-card-date">
+                      📅 {formatDate(job.createdAt)}
+                    </div>
                     <div
-                      className={`resume-file-icon ${getFileType(
-                        resume.contentType
-                      )}`}
+                      className="job-card-actions"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      {getFileType(resume.contentType) === "pdf" ? "📕" : "📘"}
-                    </div>
-                    <div className="resume-card-info">
-                      <div
-                        className="resume-card-title"
-                        title={resume.fileName}
+                      <button
+                        className="job-card-action-btn primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/create-analysis?jobId=${job.id}`);
+                        }}
                       >
-                        {resume.fileName}
-                      </div>
-                      <div className="resume-card-meta">
-                        <span>📅 {formatDate(resume.uploadedAt)}</span>
-                        <span>💾 {formatFileSize(resume.fileSizeBytes)}</span>
-                      </div>
+                        Analyze
+                      </button>
+                      <button
+                        className="job-card-action-btn danger"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(job.id, job.jobTitle);
+                        }}
+                        disabled={deletingId === job.id}
+                      >
+                        {deletingId === job.id ? "..." : "🗑️"}
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="resume-card-preview">
-                    <p>
-                      {resume.parsedContentPreview || "No preview available"}
-                    </p>
-                  </div>
-
-                  <div className="resume-card-actions">
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => navigate(`/resumes/${resume.id}`)}
-                    >
-                      View Details
-                    </button>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() =>
-                        navigate(`/create-analysis?resumeId=${resume.id}`)
-                      }
-                    >
-                      Analyze
-                    </button>
-                    <button
-                      className="btn"
-                      style={{
-                        background: "#7F1D1D",
-                        color: "#FEE2E2",
-                        opacity: deletingId === resume.id ? 0.5 : 1,
-                      }}
-                      onClick={() => handleDelete(resume.id, resume.fileName)}
-                      disabled={deletingId === resume.id}
-                    >
-                      {deletingId === resume.id ? "..." : "🗑️"}
-                    </button>
                   </div>
                 </div>
               ))}

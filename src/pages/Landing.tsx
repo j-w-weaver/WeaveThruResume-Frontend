@@ -54,7 +54,7 @@ export function Landing() {
         <div className="nav-content">
           <a href="/" className="nav-logo">
             <div className="nav-icon">W</div>
-            <span className="nav-brand">WeavThru</span>
+            <span className="nav-brand">WeavThruResume</span>
           </a>
 
           <div className="nav-links">
@@ -214,7 +214,7 @@ export function Landing() {
             <div className="footer-brand">
               <div className="nav-logo">
                 <div className="nav-icon">W</div>
-                <span className="nav-brand">WeavThru</span>
+                <span className="nav-brand">WeavThruResume</span>
               </div>
               <p>AI-powered resume optimization</p>
             </div>

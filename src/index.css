@@ -174,9 +174,8 @@ body {
 /* Trusted Section */
 .trusted {
   padding: 64px 24px;
-  border-top: 1px solid #2d3748;
-  border-bottom: 1px solid #2d3748;
   text-align: center;
+  background: #161b26;
 }
 
 .trusted-label {
@@ -198,7 +197,7 @@ body {
 .trusted-company {
   color: #c9c5ba;
   font-weight: 600;
-  font-size: 18px;
+  font-size: 20px;
   opacity: 0.4;
   transition: opacity 0.2s;
 }

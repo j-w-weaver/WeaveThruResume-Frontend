@@ -1,11 +1,12 @@
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "../dashboard.css";
 
 export function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
     {
@@ -25,7 +26,7 @@ export function Dashboard() {
     },
     {
       name: "Analysis",
-      path: "/analyses",
+      path: "/create-analyses",
       icon: "📊",
     },
   ];
@@ -58,19 +59,57 @@ export function Dashboard() {
       description: "Get AI-powered recommendations",
       icon: "📊",
       color: "orange",
-      path: "/analyses",
+      path: "/create-analyses",
     },
   ];
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsMobileMenuOpen(false); // Close mobile menu after navigation
+  };
+
   return (
     <div className="dashboard">
+      {/* Mobile Menu Button */}
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? (
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        ) : (
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        )}
+      </button>
+
+      {/* Overlay */}
+      <div
+        className={`sidebar-overlay ${isMobileMenuOpen ? "active" : ""}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isMobileMenuOpen ? "mobile-open" : ""}`}>
         {/* Logo */}
         <div className="sidebar-header">
           <div className="nav-logo">
             <div className="nav-icon">W</div>
-            <span className="nav-brand">WeavThruResume</span>
+            <span className="nav-brand">WeavThru</span>
           </div>
         </div>
 
@@ -79,7 +118,7 @@ export function Dashboard() {
           {navItems.map((item) => (
             <button
               key={item.path}
-              onClick={() => navigate(item.path)}
+              onClick={() => handleNavigation(item.path)}
               className={`sidebar-nav-item ${
                 location.pathname === item.path ? "active" : ""
               }`}
@@ -124,7 +163,7 @@ export function Dashboard() {
       <main className="dashboard-main">
         {/* Header */}
         <div className="dashboard-header">
-          <h1>Welcome back, {user?.name}!</h1>
+          <h1>Welcome back, {user?.name}! 👋</h1>
           <p>Transform your resume with AI-powered insights</p>
         </div>
 
@@ -139,7 +178,7 @@ export function Dashboard() {
                 <div
                   key={action.title}
                   className="dashboard-card"
-                  onClick={() => navigate(action.path)}
+                  onClick={() => handleNavigation(action.path)}
                 >
                   <div className={`dashboard-card-icon ${action.color}`}>
                     {action.icon}

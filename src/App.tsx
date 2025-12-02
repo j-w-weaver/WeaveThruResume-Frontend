@@ -9,6 +9,13 @@ import { ResumeUpload } from "./pages/ResumeUpload";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { ResumeList } from "./pages/ResumeList";
+import { PublicRoute } from "./components/PublicRoute";
+import { ResumeDetail } from "./pages/ResumeDetail";
+import { AddJob } from "./pages/AddJob";
+import { JobList } from "./pages/JobList";
+import { JobDetail } from "./pages/JobDetail";
+import { CreateAnalysis } from "./pages/CreateAnalysis";
+import { AnalysisResults } from "./pages/AnalysisResults";
 
 function ResumesPlaceholder() {
   const navigate = useNavigate();
@@ -135,9 +142,35 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Landing />} />
+          {/* <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Register />} /> */}
+
+          {/* Public Routes - Redirect to dashboard if logged in */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Landing />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
 
           {/* Protected Routes */}
           <Route
@@ -163,6 +196,60 @@ function App() {
             element={
               <ProtectedRoute>
                 <ResumeList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/resumes/:id"
+            element={
+              <ProtectedRoute>
+                <ResumeDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/add-job"
+            element={
+              <ProtectedRoute>
+                <AddJob />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/jobs"
+            element={
+              <ProtectedRoute>
+                <JobList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/job/:id"
+            element={
+              <ProtectedRoute>
+                <JobDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/create-analyses"
+            element={
+              <ProtectedRoute>
+                <CreateAnalysis />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/analysis/:id"
+            element={
+              <ProtectedRoute>
+                <AnalysisResults />
               </ProtectedRoute>
             }
           />
