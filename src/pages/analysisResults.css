@@ -26,6 +26,7 @@ code /* Analysis Results Page */
   margin-bottom: 16px;
   transition: color 0.2s;
   cursor: pointer;
+  background-color: transparent;
 }
 
 .analysis-results-back:hover {

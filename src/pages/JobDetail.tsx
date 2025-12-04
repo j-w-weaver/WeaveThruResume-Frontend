@@ -3,15 +3,78 @@ import "../dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import jobService from "../services/jobService";
 import { getErrorMessage } from "../utils/api";
 import type { Job } from "../types";
+import { Skeleton } from "../components/Skeleton";
+
+// Only the main content shows skeleton
+function ContentSkeleton() {
+  return (
+    <div className="job-detail-content">
+      {/* Stats Bar */}
+      <div className="job-stats-bar">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="job-stat">
+            <Skeleton
+              width="60px"
+              height="32px"
+              style={{ margin: "0 auto 8px" }}
+            />
+            <Skeleton width="90px" height="13px" style={{ margin: "0 auto" }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Info Cards */}
+      <div className="job-info-grid">
+        <div className="job-info-card">
+          <Skeleton
+            width="70px"
+            height="12px"
+            style={{ marginBottom: "8px" }}
+          />
+          <Skeleton width="130px" height="18px" />
+        </div>
+        <div className="job-info-card">
+          <Skeleton
+            width="110px"
+            height="12px"
+            style={{ marginBottom: "8px" }}
+          />
+          <Skeleton width="180px" height="14px" />
+        </div>
+      </div>
+
+      {/* Job Description */}
+      <div className="job-content-section">
+        <Skeleton
+          width="260px"
+          height="22px"
+          style={{ marginBottom: "24px" }}
+        />
+        <div className="job-content-text">
+          {[...Array(10)].map((_, i) => (
+            <Skeleton
+              key={i}
+              width={`${85 + (i % 6) * 2.5}%`}
+              height="16px"
+              style={{ marginBottom: i === 9 ? 0 : "14px" }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function JobDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const { user, logout } = useAuth();
+  const { showToast } = useToast();
 
   const [job, setJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,10 +90,9 @@ export function JobDetail() {
     { name: "Analysis", path: "/analyses", icon: "📊" },
   ];
 
-  // Load job on mount
   useEffect(() => {
     if (id) {
-      loadJob(parseInt(id));
+      loadJob(parseInt(id, 10));
     } else {
       setError("Invalid job ID");
       setIsLoading(false);
@@ -40,7 +102,6 @@ export function JobDetail() {
   const loadJob = async (jobId: number) => {
     setIsLoading(true);
     setError("");
-
     try {
       const data = await jobService.getById(jobId);
       setJob(data);
@@ -53,15 +114,13 @@ export function JobDetail() {
 
   const handleDelete = async () => {
     if (!job) return;
-
     setIsDeleting(true);
-
     try {
       await jobService.delete(job.id);
-      console.log("✅ Job deleted");
+      showToast("Job deleted successfully", "success");
       navigate("/jobs");
     } catch (err) {
-      alert(getErrorMessage(err));
+      showToast(getErrorMessage(err), "error");
       setIsDeleting(false);
     }
   };
@@ -72,8 +131,7 @@ export function JobDetail() {
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -83,12 +141,12 @@ export function JobDetail() {
   };
 
   const getWordCount = (text: string): number => {
-    return text.trim().split(/\s+/).length;
+    return text.trim().split(/\s+/).filter(Boolean).length;
   };
 
   return (
     <div className="job-detail-page">
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu */}
       <button
         className="mobile-menu-btn"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -115,7 +173,6 @@ export function JobDetail() {
         )}
       </button>
 
-      {/* Overlay */}
       <div
         className={`sidebar-overlay ${isMobileMenuOpen ? "active" : ""}`}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -148,10 +205,10 @@ export function JobDetail() {
         <div className="sidebar-footer">
           <div className="sidebar-user">
             <div className="sidebar-avatar">
-              {user?.name?.charAt(0).toUpperCase()}
+              {user?.name?.charAt(0).toUpperCase() || "?"}
             </div>
             <div className="sidebar-user-info">
-              <div className="sidebar-user-name">{user?.name}</div>
+              <div className="sidebar-user-name">{user?.name || "User"}</div>
               <div className="sidebar-user-email">{user?.email}</div>
             </div>
             <button onClick={logout} className="sidebar-logout" title="Logout">
@@ -176,62 +233,54 @@ export function JobDetail() {
 
       {/* Main Content */}
       <main className="job-detail-main">
-        {/* Loading State */}
-        {isLoading && (
-          <div className="job-detail-loading">
-            <div className="job-detail-loading-spinner"></div>
-            <p>Loading job details...</p>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && !isLoading && (
-          <div style={{ padding: "32px 48px" }}>
-            <div className="job-detail-error">
-              <div className="job-detail-error-icon">❌</div>
-              <h2>Job Not Found</h2>
-              <p>{error}</p>
-              <button
-                onClick={() => navigate("/jobs")}
-                className="btn btn-primary"
+        {/* Header — always visible */}
+        <div className="job-detail-header">
+          <div className="job-detail-header-content">
+            <button
+              onClick={() => navigate("/jobs")}
+              className="job-detail-back"
+            >
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                Back to Job Descriptions
-              </button>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back to Job Descriptions
+            </button>
+
+            <h1 className="job-detail-title">
+              {isLoading ? "Loading job description..." : job?.jobTitle}
+            </h1>
+
+            <div className="job-detail-company">
+              {isLoading ? (
+                <Skeleton width="220px" height="20px" />
+              ) : (
+                <>Company: {job?.companyName}</>
+              )}
             </div>
-          </div>
-        )}
 
-        {/* Job Content */}
-        {job && !isLoading && !error && (
-          <>
-            {/* Header */}
-            <div className="job-detail-header">
-              <div className="job-detail-header-content">
-                <a
-                  onClick={() => navigate("/jobs")}
-                  className="job-detail-back"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                  Back to Job Descriptions
-                </a>
-
-                <h1 className="job-detail-title">{job.jobTitle}</h1>
-                <div className="job-detail-company">🏢 {job.companyName}</div>
-
-                <div className="job-detail-meta">
+            <div className="job-detail-meta">
+              {isLoading ? (
+                <>
+                  <Skeleton width="170px" height="14px" />
+                  <Skeleton
+                    width="100px"
+                    height="14px"
+                    style={{ marginLeft: "24px" }}
+                  />
+                </>
+              ) : (
+                <>
                   <div className="job-detail-meta-item">
                     <svg
                       width="16"
@@ -247,7 +296,7 @@ export function JobDetail() {
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    Added {formatDate(job.createdAt)}
+                    Added {formatDate(job!.createdAt)}
                   </div>
                   <div className="job-detail-meta-item">
                     <svg
@@ -264,31 +313,57 @@ export function JobDetail() {
                         d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
                       />
                     </svg>
-                    {job.status}
+                    {job!.status}
                   </div>
-                </div>
-              </div>
-
-              <div className="job-detail-actions">
-                <button
-                  onClick={() => navigate(`/create-analysis?jobId=${job.id}`)}
-                  className="btn btn-primary"
-                >
-                  Create Analysis
-                </button>
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="btn"
-                  style={{ background: "#7F1D1D", color: "#FEE2E2" }}
-                >
-                  Delete
-                </button>
-              </div>
+                </>
+              )}
             </div>
+          </div>
 
-            {/* Content */}
+          <div className="job-detail-actions">
+            <button
+              onClick={() => navigate(`/create-analysis?jobId=${id}`)}
+              className="btn btn-primary"
+              disabled={isLoading}
+            >
+              Create Analysis
+            </button>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="btn"
+              disabled={isLoading}
+              style={{
+                background: isLoading ? "#444" : "#7F1D1D",
+                color: "#FEE2E2",
+                opacity: isLoading ? 0.6 : 1,
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+
+        {/* Content Area — skeleton only here */}
+        {isLoading ? (
+          <ContentSkeleton />
+        ) : error ? (
+          <div className="job-detail-error-container">
+            <div className="job-detail-error">
+              <div className="job-detail-error-icon">Error</div>
+              <h2>Job Not Found</h2>
+              <p>{error}</p>
+              <button
+                onClick={() => navigate("/jobs")}
+                className="btn btn-primary"
+              >
+                Back to Job Descriptions
+              </button>
+            </div>
+          </div>
+        ) : (
+          job && (
             <div className="job-detail-content">
-              {/* Stats Bar */}
+              {/* Stats */}
               <div className="job-stats-bar">
                 <div className="job-stat">
                   <div className="job-stat-number">
@@ -313,7 +388,7 @@ export function JobDetail() {
                 <div className="job-info-card">
                   <div className="job-info-card-label">Status</div>
                   <div className="job-info-card-value status saved">
-                    💾 {job.status}
+                    Saved {job.status}
                   </div>
                 </div>
 
@@ -346,7 +421,7 @@ export function JobDetail() {
                 )}
               </div>
 
-              {/* Job Description */}
+              {/* Full Job Description */}
               <div className="job-content-section">
                 <h2>
                   <svg
@@ -365,17 +440,16 @@ export function JobDetail() {
                   </svg>
                   Full Job Description
                 </h2>
-
                 <div className="job-content-text">
                   {job.jobDescriptionPreview}
                 </div>
               </div>
             </div>
-          </>
+          )
         )}
       </main>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {showDeleteModal && job && (
         <div className="modal-overlay">
           <div className="modal">

@@ -9,6 +9,51 @@ import jobService from "../services/jobService";
 import analysisService from "../services/analysisService";
 import { getErrorMessage } from "../utils/api";
 import type { Resume, Job } from "../types";
+import { Skeleton } from "../components/Skeleton";
+
+// Skeleton only for the main content area
+function ContentSkeleton() {
+  return (
+    <div className="create-analysis-content">
+      {/* Steps Skeleton */}
+      <div className="analysis-steps">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="analysis-step">
+            <Skeleton width="40px" height="40px" borderRadius="50%" />
+            <Skeleton
+              width="100px"
+              height="14px"
+              style={{ marginTop: "12px" }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Form Sections Skeleton */}
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="form-section" style={{ marginBottom: "32px" }}>
+          <Skeleton
+            width="200px"
+            height="24px"
+            style={{ marginBottom: "20px" }}
+          />
+          <Skeleton
+            width="100%"
+            height="48px"
+            borderRadius="8px"
+            style={{ marginBottom: "12px" }}
+          />
+          <Skeleton width="320px" height="60px" borderRadius="8px" />
+        </div>
+      ))}
+
+      <div style={{ display: "flex", gap: "12px", marginTop: "40px" }}>
+        <Skeleton width="120px" height="48px" borderRadius="8px" />
+        <Skeleton width="180px" height="48px" borderRadius="8px" />
+      </div>
+    </div>
+  );
+}
 
 export function CreateAnalysis() {
   const navigate = useNavigate();
@@ -38,13 +83,13 @@ export function CreateAnalysis() {
     { name: "Analysis", path: "/analyses", icon: "📊" },
   ];
 
-  // Load resumes and jobs on mount
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
     setIsLoadingData(true);
+    setError("");
 
     try {
       const [resumesData, jobsData] = await Promise.all([
@@ -55,15 +100,10 @@ export function CreateAnalysis() {
       setResumes(resumesData);
       setJobs(jobsData);
 
-      // If no resumes or jobs, show error
       if (resumesData.length === 0) {
-        setError(
-          "You need to upload at least one resume before creating an analysis."
-        );
+        setError("You need to upload at least one resume to continue.");
       } else if (jobsData.length === 0) {
-        setError(
-          "You need to add at least one job description before creating an analysis."
-        );
+        setError("You need to add at least one job description to continue.");
       }
     } catch (err) {
       setError(getErrorMessage(err));
@@ -76,19 +116,12 @@ export function CreateAnalysis() {
     e.preventDefault();
     setError("");
 
-    // Validation
-    if (!formData.resumeId) {
-      setError("Please select a resume");
-      return;
-    }
-
-    if (!formData.jobApplicationId) {
-      setError("Please select a job description");
-      return;
-    }
-
-    if (!formData.industry) {
-      setError("Please select an industry");
+    if (
+      !formData.resumeId ||
+      !formData.jobApplicationId ||
+      !formData.industry
+    ) {
+      setError("Please complete all required fields");
       return;
     }
 
@@ -102,12 +135,10 @@ export function CreateAnalysis() {
         specialization: formData.specialization || undefined,
       });
 
-      console.log("✅ Analysis created:", response.id);
-
-      // Navigate to analysis results
       navigate(`/analysis/${response.id}`);
     } catch (err) {
       setError(getErrorMessage(err));
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -132,7 +163,7 @@ export function CreateAnalysis() {
 
   return (
     <div className="create-analysis-page">
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu */}
       <button
         className="mobile-menu-btn"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -159,7 +190,6 @@ export function CreateAnalysis() {
         )}
       </button>
 
-      {/* Overlay */}
       <div
         className={`sidebar-overlay ${isMobileMenuOpen ? "active" : ""}`}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -192,10 +222,10 @@ export function CreateAnalysis() {
         <div className="sidebar-footer">
           <div className="sidebar-user">
             <div className="sidebar-avatar">
-              {user?.name?.charAt(0).toUpperCase()}
+              {user?.name?.charAt(0).toUpperCase() || "?"}
             </div>
             <div className="sidebar-user-info">
-              <div className="sidebar-user-name">{user?.name}</div>
+              <div className="sidebar-user-name">{user?.name || "User"}</div>
               <div className="sidebar-user-email">{user?.email}</div>
             </div>
             <button onClick={logout} className="sidebar-logout" title="Logout">
@@ -220,8 +250,9 @@ export function CreateAnalysis() {
 
       {/* Main Content */}
       <main className="create-analysis-main">
+        {/* Header — always visible instantly */}
         <div className="create-analysis-header">
-          <a
+          <button
             onClick={() => navigate("/dashboard")}
             className="create-analysis-back"
           >
@@ -240,63 +271,98 @@ export function CreateAnalysis() {
               />
             </svg>
             Back to Dashboard
-          </a>
+          </button>
 
           <h1>Create Analysis</h1>
           <p>Analyze your resume against a job description with AI</p>
         </div>
 
-        <div className="create-analysis-content">
-          {/* Progress Steps */}
-          <div className="analysis-steps">
+        {/* Content Area — skeleton only here */}
+        {isLoadingData ? (
+          <ContentSkeleton />
+        ) : error && (resumes.length === 0 || jobs.length === 0) ? (
+          /* Empty States */
+          <div className="create-analysis-content">
             <div
-              className={`analysis-step ${currentStep >= 1 ? "active" : ""} ${
-                currentStep > 1 ? "completed" : ""
-              }`}
+              className="analysis-form"
+              style={{ textAlign: "center", padding: "60px 24px" }}
             >
-              <div className="analysis-step-circle">
-                {currentStep > 1 ? "✓" : "1"}
+              <div style={{ fontSize: "80px", marginBottom: "24px" }}>
+                {resumes.length === 0 ? "Document" : "Briefcase"}
               </div>
-              <div className="analysis-step-label">Select Resume</div>
-            </div>
-            <div
-              className={`analysis-step ${currentStep >= 2 ? "active" : ""} ${
-                currentStep > 2 ? "completed" : ""
-              }`}
-            >
-              <div className="analysis-step-circle">
-                {currentStep > 2 ? "✓" : "2"}
-              </div>
-              <div className="analysis-step-label">Select Job</div>
-            </div>
-            <div
-              className={`analysis-step ${currentStep >= 3 ? "active" : ""}`}
-            >
-              <div className="analysis-step-circle">3</div>
-              <div className="analysis-step-label">Industry Info</div>
+              <h2
+                style={{
+                  color: "#F7F4ED",
+                  fontSize: "24px",
+                  marginBottom: "16px",
+                }}
+              >
+                {resumes.length === 0
+                  ? "No Resumes Found"
+                  : "No Job Descriptions"}
+              </h2>
+              <p
+                style={{
+                  color: "#9A9891",
+                  marginBottom: "32px",
+                  maxWidth: "400px",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              >
+                {resumes.length === 0
+                  ? "You need to upload a resume before creating an analysis"
+                  : "You need to add a job description before creating an analysis"}
+              </p>
+              <button
+                onClick={() =>
+                  navigate(resumes.length === 0 ? "/upload-resume" : "/add-job")
+                }
+                className="btn btn-primary"
+              >
+                {resumes.length === 0 ? "Upload Resume" : "Add Job Description"}
+              </button>
             </div>
           </div>
-
-          {/* Error Alert */}
-          {error && <div className="alert alert-error">{error}</div>}
-
-          {/* Loading State */}
-          {isLoadingData && (
-            <div className="alert alert-info">
-              Loading your resumes and jobs...
-            </div>
-          )}
-
-          {/* Form */}
-          {!isLoadingData && resumes.length > 0 && jobs.length > 0 && (
-            <form onSubmit={handleSubmit} className="analysis-form">
-              {/* Step 1: Select Resume */}
-              <div className="form-section">
-                <div className="form-section-title">
-                  <span>📄</span>
-                  Step 1: Select Resume
+        ) : (
+          /* Main Form */
+          <div className="create-analysis-content">
+            {/* Progress Steps */}
+            <div className="analysis-steps">
+              <div
+                className={`analysis-step ${currentStep >= 1 ? "active" : ""} ${
+                  currentStep > 1 ? "completed" : ""
+                }`}
+              >
+                <div className="analysis-step-circle">
+                  {currentStep > 1 ? "Check" : "1"}
                 </div>
+                <div className="analysis-step-label">Select Resume</div>
+              </div>
+              <div
+                className={`analysis-step ${currentStep >= 2 ? "active" : ""} ${
+                  currentStep > 2 ? "completed" : ""
+                }`}
+              >
+                <div className="analysis-step-circle">
+                  {currentStep > 2 ? "Check" : "2"}
+                </div>
+                <div className="analysis-step-label">Select Job</div>
+              </div>
+              <div
+                className={`analysis-step ${currentStep >= 3 ? "active" : ""}`}
+              >
+                <div className="analysis-step-circle">3</div>
+                <div className="analysis-step-label">Industry Info</div>
+              </div>
+            </div>
 
+            {error && <div className="alert alert-error">{error}</div>}
+
+            <form onSubmit={handleSubmit} className="analysis-form">
+              {/* Step 1: Resume */}
+              <div className="form-section">
+                <div className="form-section-title">Step 1: Select Resume</div>
                 <div className="form-group">
                   <label
                     htmlFor="resumeId"
@@ -306,7 +372,6 @@ export function CreateAnalysis() {
                   </label>
                   <select
                     id="resumeId"
-                    name="resumeId"
                     value={formData.resumeId}
                     onChange={(e) =>
                       setFormData({ ...formData, resumeId: e.target.value })
@@ -315,16 +380,16 @@ export function CreateAnalysis() {
                     disabled={isProcessing}
                   >
                     <option value="">-- Select a resume --</option>
-                    {resumes.map((resume) => (
-                      <option key={resume.id} value={resume.id}>
-                        {resume.fileName}
+                    {resumes.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.fileName}
                       </option>
                     ))}
                   </select>
 
                   {selectedResume && (
                     <div className="selected-item-preview">
-                      <div className="selected-item-icon resume">📄</div>
+                      <div className="selected-item-icon resume">Document</div>
                       <div className="selected-item-info">
                         <div className="selected-item-title">
                           {selectedResume.fileName}
@@ -341,23 +406,20 @@ export function CreateAnalysis() {
                 </div>
               </div>
 
-              {/* Step 2: Select Job */}
+              {/* Step 2: Job */}
               <div className="form-section">
                 <div className="form-section-title">
-                  <span>💼</span>
                   Step 2: Select Job Description
                 </div>
-
                 <div className="form-group">
                   <label
                     htmlFor="jobApplicationId"
                     className="form-label form-label-required"
                   >
-                    Choose a job description
+                    Choose a job
                   </label>
                   <select
                     id="jobApplicationId"
-                    name="jobApplicationId"
                     value={formData.jobApplicationId}
                     onChange={(e) =>
                       setFormData({
@@ -369,16 +431,16 @@ export function CreateAnalysis() {
                     disabled={isProcessing}
                   >
                     <option value="">-- Select a job --</option>
-                    {jobs.map((job) => (
-                      <option key={job.id} value={job.id}>
-                        {job.jobTitle} at {job.companyName}
+                    {jobs.map((j) => (
+                      <option key={j.id} value={j.id}>
+                        {j.jobTitle} at {j.companyName}
                       </option>
                     ))}
                   </select>
 
                   {selectedJob && (
                     <div className="selected-item-preview">
-                      <div className="selected-item-icon job">💼</div>
+                      <div className="selected-item-icon job">Briefcase</div>
                       <div className="selected-item-info">
                         <div className="selected-item-title">
                           {selectedJob.jobTitle}
@@ -392,13 +454,11 @@ export function CreateAnalysis() {
                 </div>
               </div>
 
-              {/* Step 3: Industry Info */}
+              {/* Step 3: Industry */}
               <div className="form-section">
                 <div className="form-section-title">
-                  <span>🏭</span>
                   Step 3: Industry Information
                 </div>
-
                 <div className="form-group">
                   <label
                     htmlFor="industry"
@@ -408,7 +468,6 @@ export function CreateAnalysis() {
                   </label>
                   <select
                     id="industry"
-                    name="industry"
                     value={formData.industry}
                     onChange={(e) =>
                       setFormData({ ...formData, industry: e.target.value })
@@ -416,22 +475,19 @@ export function CreateAnalysis() {
                     className="form-select"
                     disabled={isProcessing}
                   >
-                    <option value="">-- Select an industry --</option>
-                    <option value="Technology">Technology</option>
-                    <option value="Software">Software</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Education">Education</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Manufacturing">Manufacturing</option>
-                    <option value="Retail">Retail</option>
-                    <option value="Consulting">Consulting</option>
-                    <option value="Other">Other</option>
+                    <option value="">-- Select industry --</option>
+                    <option>Technology</option>
+                    <option>Software</option>
+                    <option>Healthcare</option>
+                    <option>Finance</option>
+                    <option>Education</option>
+                    <option>Marketing</option>
+                    <option>Sales</option>
+                    <option>Manufacturing</option>
+                    <option>Retail</option>
+                    <option>Consulting</option>
+                    <option>Other</option>
                   </select>
-                  <span className="form-hint">
-                    Choose the industry that best matches the job
-                  </span>
                 </div>
 
                 <div className="form-group">
@@ -441,7 +497,6 @@ export function CreateAnalysis() {
                   <input
                     type="text"
                     id="specialization"
-                    name="specialization"
                     value={formData.specialization}
                     onChange={(e) =>
                       setFormData({
@@ -450,16 +505,12 @@ export function CreateAnalysis() {
                       })
                     }
                     className="form-input"
-                    placeholder="e.g., Full-Stack Development, Data Science, UX Design"
+                    placeholder="e.g. Full-Stack, Data Science, UX Design"
                     disabled={isProcessing}
                   />
-                  <span className="form-hint">
-                    Add a specific specialization for more targeted analysis
-                  </span>
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="form-actions">
                 <button
                   type="button"
@@ -474,80 +525,27 @@ export function CreateAnalysis() {
                   className="btn btn-primary"
                   disabled={isProcessing}
                 >
-                  Create Analysis
+                  {isProcessing ? "Creating Analysis..." : "Create Analysis"}
                 </button>
               </div>
             </form>
-          )}
-
-          {/* Empty States */}
-          {!isLoadingData && resumes.length === 0 && (
-            <div className="analysis-form">
-              <div style={{ textAlign: "center", padding: "48px 24px" }}>
-                <div style={{ fontSize: "64px", marginBottom: "20px" }}>📄</div>
-                <h2
-                  style={{
-                    color: "#F7F4ED",
-                    fontSize: "24px",
-                    marginBottom: "12px",
-                  }}
-                >
-                  No Resumes Found
-                </h2>
-                <p style={{ color: "#9A9891", marginBottom: "24px" }}>
-                  You need to upload a resume before creating an analysis
-                </p>
-                <button
-                  onClick={() => navigate("/upload-resume")}
-                  className="btn btn-primary"
-                >
-                  Upload Resume
-                </button>
-              </div>
-            </div>
-          )}
-
-          {!isLoadingData && resumes.length > 0 && jobs.length === 0 && (
-            <div className="analysis-form">
-              <div style={{ textAlign: "center", padding: "48px 24px" }}>
-                <div style={{ fontSize: "64px", marginBottom: "20px" }}>💼</div>
-                <h2
-                  style={{
-                    color: "#F7F4ED",
-                    fontSize: "24px",
-                    marginBottom: "12px",
-                  }}
-                >
-                  No Job Descriptions Found
-                </h2>
-                <p style={{ color: "#9A9891", marginBottom: "24px" }}>
-                  You need to add a job description before creating an analysis
-                </p>
-                <button
-                  onClick={() => navigate("/add-job")}
-                  className="btn btn-primary"
-                >
-                  Add Job Description
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Processing Modal */}
-      {isProcessing && (
-        <div className="processing-modal">
-          <div className="processing-content">
-            <div className="processing-spinner"></div>
-            <h3>Creating Analysis...</h3>
-            <p>
-              Our AI is analyzing your resume against the job description. This
-              may take 30-60 seconds.
-            </p>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Processing Modal */}
+        {isProcessing && (
+          <div className="processing-modal">
+            <div className="processing-content">
+              <div className="processing-spinner"></div>
+              <h3>Creating Analysis...</h3>
+              <p>
+                Our AI is comparing your resume to the job description. This
+                usually takes 30–60 seconds.
+              </p>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

@@ -789,11 +789,4 @@ body {
       grid-template-columns: 1fr;
     }
   }
-
-  /* Spin animation for loading spinner */
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
 }

@@ -16,6 +16,9 @@ import { JobList } from "./pages/JobList";
 import { JobDetail } from "./pages/JobDetail";
 import { CreateAnalysis } from "./pages/CreateAnalysis";
 import { AnalysisResults } from "./pages/AnalysisResults";
+import { AnalysesList } from "./pages/AnalysesList";
+import { ToastProvider } from "./context/ToastContext"; // ✅ ADD THIS
+import { ToastContainer } from "./components/Toast"; // ✅ ADD THIS
 
 function ResumesPlaceholder() {
   const navigate = useNavigate();
@@ -139,125 +142,146 @@ function ResumesPlaceholder() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          {/* <Route path="/" element={<Landing />} />
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            {/* <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} /> */}
 
-          {/* Public Routes - Redirect to dashboard if logged in */}
-          <Route
-            path="/"
-            element={
-              <PublicRoute>
-                <Landing />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
+            {/* Public Routes - Redirect to dashboard if logged in */}
+            <Route
+              path="/"
+              element={
+                <PublicRoute>
+                  <Landing />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              }
+            />
 
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/upload-resume"
-            element={
-              <ProtectedRoute>
-                <ResumeUpload />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/upload-resume"
+              element={
+                <ProtectedRoute>
+                  <ResumeUpload />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/resumes"
-            element={
-              <ProtectedRoute>
-                <ResumeList />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/resumes"
+              element={
+                <ProtectedRoute>
+                  <ResumeList />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/resumes/:id"
-            element={
-              <ProtectedRoute>
-                <ResumeDetail />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/resumes/:id"
+              element={
+                <ProtectedRoute>
+                  <ResumeDetail />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/add-job"
-            element={
-              <ProtectedRoute>
-                <AddJob />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/add-job"
+              element={
+                <ProtectedRoute>
+                  <AddJob />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/jobs"
-            element={
-              <ProtectedRoute>
-                <JobList />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/jobs"
+              element={
+                <ProtectedRoute>
+                  <JobList />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/job/:id"
-            element={
-              <ProtectedRoute>
-                <JobDetail />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/job/:id"
+              element={
+                <ProtectedRoute>
+                  <JobDetail />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/create-analyses"
-            element={
-              <ProtectedRoute>
-                <CreateAnalysis />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/create-analyses"
+              element={
+                <ProtectedRoute>
+                  <CreateAnalysis />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/analysis/:id"
-            element={
-              <ProtectedRoute>
-                <AnalysisResults />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/analysis/:id"
+              element={
+                <ProtectedRoute>
+                  <AnalysisResults />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Catch all - MUST BE LAST */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+            <Route
+              path="/analyses"
+              element={
+                <ProtectedRoute>
+                  <AnalysesList />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/create-analysis"
+              element={
+                <ProtectedRoute>
+                  <CreateAnalysis />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Catch all - MUST BE LAST */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <ToastContainer />
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }

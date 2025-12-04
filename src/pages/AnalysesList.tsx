@@ -1,27 +1,30 @@
+import "./analysesList.css";
 import "../dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import resumeService from "../services/resumeService";
+import analysisService from "../services/analysisService";
 import { getErrorMessage } from "../utils/api";
-import { SkeletonList } from "../components/Skeleton";
-import type { Resume } from "../types";
+import type { AnalysisSummary } from "../types";
+import { SkeletonAnalysisCard } from "../components/Skeleton";
 import { useToast } from "../context/ToastContext";
 
-export function ResumeList() {
+export function AnalysesList() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
   const { showToast } = useToast();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [filteredResumes, setFilteredResumes] = useState<Resume[]>([]);
+  const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);
+  const [filteredAnalyses, setFilteredAnalyses] = useState<AnalysisSummary[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"date" | "name">("date");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<"date" | "score">("date");
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
@@ -31,20 +34,20 @@ export function ResumeList() {
   ];
 
   useEffect(() => {
-    loadResumes();
+    loadAnalyses();
   }, []);
 
   useEffect(() => {
-    filterAndSortResumes();
-  }, [resumes, searchQuery, sortBy]);
+    filterAndSortAnalyses();
+  }, [analyses, searchQuery, sortBy]);
 
-  const loadResumes = async () => {
+  const loadAnalyses = async () => {
     setIsLoading(true);
     setError("");
 
     try {
-      const data = await resumeService.getMyResumes();
-      setResumes(data);
+      const data = await analysisService.getMyAnalyses();
+      setAnalyses(data);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -52,25 +55,29 @@ export function ResumeList() {
     }
   };
 
-  const filterAndSortResumes = () => {
-    let filtered = [...resumes];
+  const filterAndSortAnalyses = () => {
+    let filtered = [...analyses];
 
     if (searchQuery) {
-      filtered = filtered.filter((resume) =>
-        resume.fileName.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (analysis) =>
+          analysis.industry.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          analysis.specialization
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
     }
 
     if (sortBy === "date") {
       filtered.sort(
         (a, b) =>
-          new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-    } else {
-      filtered.sort((a, b) => a.fileName.localeCompare(b.fileName));
+    } else if (sortBy === "score") {
+      filtered.sort((a, b) => b.matchScore - a.matchScore);
     }
 
-    setFilteredResumes(filtered);
+    setFilteredAnalyses(filtered);
   };
 
   const handleDelete = async (id: number, e: React.MouseEvent) => {
@@ -78,7 +85,7 @@ export function ResumeList() {
 
     if (
       !window.confirm(
-        "Are you sure you want to delete this resume? This action cannot be undone."
+        "Are you sure you want to delete this analysis? This action cannot be undone."
       )
     ) {
       return;
@@ -87,9 +94,9 @@ export function ResumeList() {
     setDeletingId(id);
 
     try {
-      await resumeService.delete(id);
-      setResumes((prev) => prev.filter((r) => r.id !== id));
-      showToast("Resume deleted successfully", "success");
+      await analysisService.delete(id);
+      setAnalyses((prev) => prev.filter((a) => a.id !== id));
+      showToast("Analysis deleted successfully", "success");
     } catch (err) {
       showToast(`Failed to delete: ${getErrorMessage(err)}`, "error");
     } finally {
@@ -110,15 +117,15 @@ export function ResumeList() {
     });
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  const getMatchScoreColor = (score: number): string => {
+    if (score >= 80) return "#10B981";
+    if (score >= 60) return "#F59E0B";
+    return "#EF4444";
   };
 
   return (
     <div className="dashboard">
-      {/* Mobile Menu */}
+      {/* Mobile Menu Button */}
       <button
         className="mobile-menu-btn"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -145,6 +152,7 @@ export function ResumeList() {
         )}
       </button>
 
+      {/* Overlay */}
       <div
         className={`sidebar-overlay ${isMobileMenuOpen ? "active" : ""}`}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -177,10 +185,10 @@ export function ResumeList() {
         <div className="sidebar-footer">
           <div className="sidebar-user">
             <div className="sidebar-avatar">
-              {user?.name?.charAt(0).toUpperCase() || "?"}
+              {user?.name?.charAt(0).toUpperCase()}
             </div>
             <div className="sidebar-user-info">
-              <div className="sidebar-user-name">{user?.name || "User"}</div>
+              <div className="sidebar-user-name">{user?.name}</div>
               <div className="sidebar-user-email">{user?.email}</div>
             </div>
             <button onClick={logout} className="sidebar-logout" title="Logout">
@@ -207,17 +215,17 @@ export function ResumeList() {
       <main className="dashboard-main">
         <div className="dashboard-header">
           <div>
-            <h1>My Resumes 📄</h1>
+            <h1>My Analyses 📊</h1>
             <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
-              Manage your uploaded resumes
+              View all your resume analyses
             </p>
           </div>
           <button
-            onClick={() => navigate("/upload-resume")}
+            onClick={() => navigate("/create-analysis")}
             className="btn btn-primary"
             style={{ marginTop: "16px" }}
           >
-            + Upload New Resume
+            + Create New Analysis
           </button>
         </div>
 
@@ -234,11 +242,11 @@ export function ResumeList() {
                 color: "#FEE2E2",
               }}
             >
-              Error {error}
+              ❌ {error}
             </div>
           )}
 
-          {/* Search & Sort — ALWAYS visible */}
+          {/* Search & Sort - ALWAYS visible */}
           <div
             style={{
               display: "flex",
@@ -250,7 +258,7 @@ export function ResumeList() {
             <div style={{ flex: "1", minWidth: "250px" }}>
               <input
                 type="text"
-                placeholder="Search resumes..."
+                placeholder="Search by industry or specialization..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -270,7 +278,7 @@ export function ResumeList() {
 
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "date" | "name")}
+              onChange={(e) => setSortBy(e.target.value as "date" | "score")}
               style={{
                 padding: "12px 16px",
                 background: "#161b26",
@@ -283,15 +291,25 @@ export function ResumeList() {
               }}
             >
               <option value="date">Sort by Date</option>
-              <option value="name">Sort by Name</option>
+              <option value="score">Sort by Match Score</option>
             </select>
           </div>
 
-          {/* Only the list is loading */}
-          {isLoading && <SkeletonList />}
+          {/* Loading State */}
+          {isLoading && (
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+            >
+              <SkeletonAnalysisCard />
+              <SkeletonAnalysisCard />
+              <SkeletonAnalysisCard />
+              <SkeletonAnalysisCard />
+              <SkeletonAnalysisCard />
+            </div>
+          )}
 
-          {/* List */}
-          {!isLoading && filteredResumes.length > 0 && (
+          {/* Analyses List */}
+          {!isLoading && filteredAnalyses.length > 0 && (
             <div
               style={{
                 background: "#161b26",
@@ -300,20 +318,20 @@ export function ResumeList() {
                 overflow: "hidden",
               }}
             >
-              {filteredResumes.map((resume, index) => (
+              {filteredAnalyses.map((analysis, index) => (
                 <div
-                  key={resume.id}
+                  key={analysis.id}
                   style={{
                     padding: "20px",
                     borderBottom:
-                      index < filteredResumes.length - 1
+                      index < filteredAnalyses.length - 1
                         ? "1px solid #2d3748"
                         : "none",
                     transition: "background 0.2s",
                     display: "flex",
                     alignItems: "center",
                     gap: "20px",
-                    opacity: deletingId === resume.id ? 0.5 : 1,
+                    opacity: deletingId === analysis.id ? 0.5 : 1,
                   }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.background = "#1e2533")
@@ -322,189 +340,152 @@ export function ResumeList() {
                     (e.currentTarget.style.background = "transparent")
                   }
                 >
+                  {/* Match Score Circle */}
                   <div
+                    onClick={() => navigate(`/analysis/${analysis.id}`)}
                     style={{
-                      width: "48px",
-                      height: "48px",
-                      background: "linear-gradient(135deg, #5b9fff, #4a8ae6)",
-                      borderRadius: "8px",
+                      width: "70px",
+                      height: "70px",
+                      borderRadius: "50%",
+                      border: `3px solid ${getMatchScoreColor(
+                        analysis.matchScore
+                      )}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
+                      cursor: "pointer",
                     }}
                   >
-                    <svg
-                      width="24"
-                      height="24"
-                      fill="none"
-                      stroke="white"
-                      viewBox="0 0 24 24"
+                    <span
+                      style={{
+                        fontSize: "20px",
+                        fontWeight: "bold",
+                        color: getMatchScoreColor(analysis.matchScore),
+                      }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
+                      {analysis.matchScore}%
+                    </span>
                   </div>
 
+                  {/* Analysis Info */}
                   <div
-                    onClick={() => navigate(`/resumes/${resume.id}`)}
+                    onClick={() => navigate(`/analysis/${analysis.id}`)}
                     style={{ flex: 1, cursor: "pointer" }}
                   >
                     <div
                       style={{
                         color: "#f7f4ed",
-                        fontSize: "16px",
+                        fontSize: "18px",
                         fontWeight: "600",
-                        marginBottom: "6px",
+                        marginBottom: "8px",
                       }}
                     >
-                      {resume.fileName}
+                      {analysis.industry}
+                      {analysis.specialization &&
+                        ` - ${analysis.specialization}`}
                     </div>
                     <div
                       style={{
                         display: "flex",
                         gap: "16px",
                         color: "#9a9891",
-                        fontSize: "13px",
+                        fontSize: "14px",
                         flexWrap: "wrap",
                       }}
                     >
-                      <span>Date {formatDate(resume.uploadedAt)}</span>
-                      <span>Size {formatFileSize(resume.fileSizeBytes)}</span>
+                      <span>🔍 {analysis.gapCount} gaps</span>
                       <span>
-                        Type{" "}
-                        {resume.contentType.includes("pdf") ? "PDF" : "DOCX"}
+                        💡 {analysis.recommendationCount} recommendations
                       </span>
+                      <span>
+                        ✅ {analysis.selectedRecommendationCount} selected
+                      </span>
+                      <span>📅 {formatDate(analysis.createdAt)}</span>
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                    <button
-                      onClick={() => navigate(`/resumes/${resume.id}`)}
-                      style={{
-                        background: "transparent",
-                        border: "1px solid #2d3748",
-                        borderRadius: "8px",
-                        padding: "10px",
-                        color: "#5B9FFF",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#1e3a5f";
-                        e.currentTarget.style.borderColor = "#5B9FFF";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.borderColor = "#2d3748";
-                      }}
-                      title="View details"
+                  {/* Delete Button */}
+                  <button
+                    onClick={(e) => handleDelete(analysis.id, e)}
+                    disabled={deletingId === analysis.id}
+                    style={{
+                      background: "transparent",
+                      border: "1px solid #2d3748",
+                      borderRadius: "8px",
+                      padding: "10px",
+                      color: "#EF4444",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#7F1D1D";
+                      e.currentTarget.style.borderColor = "#EF4444";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.borderColor = "#2d3748";
+                    }}
+                    title="Delete analysis"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                    </button>
-
-                    <button
-                      onClick={(e) => handleDelete(resume.id, e)}
-                      disabled={deletingId === resume.id}
-                      style={{
-                        background: "transparent",
-                        border: "1px solid #2d3748",
-                        borderRadius: "8px",
-                        padding: "10px",
-                        color: "#EF4444",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#7F1D1D";
-                        e.currentTarget.style.borderColor = "#EF4444";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.borderColor = "#2d3748";
-                      }}
-                      title="Delete resume"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Empty States */}
-          {!isLoading && filteredResumes.length === 0 && resumes.length > 0 && (
-            <div
-              style={{
-                background: "#161B26",
-                border: "1px solid #2D3748",
-                borderRadius: "10px",
-                padding: "48px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "48px", marginBottom: "16px" }}>
-                Search
-              </div>
-              <h2
+          {/* Empty State - No Results */}
+          {!isLoading &&
+            filteredAnalyses.length === 0 &&
+            analyses.length > 0 && (
+              <div
                 style={{
-                  color: "#F7F4ED",
-                  fontSize: "20px",
-                  marginBottom: "12px",
+                  background: "#161B26",
+                  border: "1px solid #2D3748",
+                  borderRadius: "10px",
+                  padding: "48px",
+                  textAlign: "center",
                 }}
               >
-                No resumes found
-              </h2>
-              <p style={{ color: "#9A9891", marginBottom: "24px" }}>
-                Try adjusting your search query
-              </p>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="btn btn-secondary"
-              >
-                Clear Search
-              </button>
-            </div>
-          )}
+                <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔍</div>
+                <h2
+                  style={{
+                    color: "#F7F4ED",
+                    fontSize: "20px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  No analyses found
+                </h2>
+                <p style={{ color: "#9A9891", marginBottom: "24px" }}>
+                  Try adjusting your search query
+                </p>
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="btn btn-secondary"
+                >
+                  Clear Search
+                </button>
+              </div>
+            )}
 
-          {!isLoading && resumes.length === 0 && (
+          {/* Empty State - No Analyses */}
+          {!isLoading && analyses.length === 0 && (
             <div
               style={{
                 background: "#161B26",
@@ -514,9 +495,7 @@ export function ResumeList() {
                 textAlign: "center",
               }}
             >
-              <div style={{ fontSize: "64px", marginBottom: "16px" }}>
-                Document
-              </div>
+              <div style={{ fontSize: "64px", marginBottom: "16px" }}>📊</div>
               <h2
                 style={{
                   color: "#F7F4ED",
@@ -524,17 +503,17 @@ export function ResumeList() {
                   marginBottom: "12px",
                 }}
               >
-                No resumes yet
+                No analyses yet
               </h2>
               <p style={{ color: "#9A9891", marginBottom: "24px" }}>
-                Upload your first resume to get started with AI-powered
-                optimization
+                Create your first analysis to get AI-powered resume
+                recommendations
               </p>
               <button
-                onClick={() => navigate("/upload-resume")}
+                onClick={() => navigate("/create-analysis")}
                 className="btn btn-primary"
               >
-                Upload Resume
+                Create Analysis
               </button>
             </div>
           )}

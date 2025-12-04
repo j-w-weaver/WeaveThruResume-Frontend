@@ -3,15 +3,58 @@ import "../dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import resumeService from "../services/resumeService";
 import { getErrorMessage } from "../utils/api";
 import type { Resume } from "../types";
+import { Skeleton } from "../components/Skeleton";
+
+// Only the main content area uses skeleton
+function ContentSkeleton() {
+  return (
+    <div className="resume-detail-content">
+      {/* Info Cards Skeleton */}
+      <div className="resume-info-grid">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="resume-info-card">
+            <Skeleton
+              width="80px"
+              height="12px"
+              style={{ marginBottom: "8px" }}
+            />
+            <Skeleton width="140px" height="18px" />
+          </div>
+        ))}
+      </div>
+
+      {/* Resume Preview Skeleton */}
+      <div className="resume-content-section">
+        <Skeleton
+          width="260px"
+          height="20px"
+          style={{ marginBottom: "24px" }}
+        />
+        <div className="resume-content-text">
+          {[...Array(10)].map((_, i) => (
+            <Skeleton
+              key={i}
+              width={`${85 + (i % 5) * 3}%`}
+              height="16px"
+              style={{ marginBottom: i === 9 ? 0 : "14px" }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ResumeDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const { user, logout } = useAuth();
+  const { showToast } = useToast();
 
   const [resume, setResume] = useState<Resume | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,10 +70,9 @@ export function ResumeDetail() {
     { name: "Analysis", path: "/analyses", icon: "📊" },
   ];
 
-  // Load resume on mount
   useEffect(() => {
     if (id) {
-      loadResume(parseInt(id));
+      loadResume(parseInt(id, 10));
     } else {
       setError("Invalid resume ID");
       setIsLoading(false);
@@ -40,7 +82,6 @@ export function ResumeDetail() {
   const loadResume = async (resumeId: number) => {
     setIsLoading(true);
     setError("");
-
     try {
       const data = await resumeService.getById(resumeId);
       setResume(data);
@@ -53,15 +94,13 @@ export function ResumeDetail() {
 
   const handleDelete = async () => {
     if (!resume) return;
-
     setIsDeleting(true);
-
     try {
       await resumeService.delete(resume.id);
-      console.log("✅ Resume deleted");
+      showToast("Resume deleted successfully", "success");
       navigate("/resumes");
     } catch (err) {
-      alert(getErrorMessage(err));
+      showToast(getErrorMessage(err), "error");
       setIsDeleting(false);
     }
   };
@@ -72,8 +111,7 @@ export function ResumeDetail() {
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -83,9 +121,9 @@ export function ResumeDetail() {
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const getFileExtension = (filename: string): string => {
@@ -154,10 +192,10 @@ export function ResumeDetail() {
         <div className="sidebar-footer">
           <div className="sidebar-user">
             <div className="sidebar-avatar">
-              {user?.name?.charAt(0).toUpperCase()}
+              {user?.name?.charAt(0).toUpperCase() || "?"}
             </div>
             <div className="sidebar-user-info">
-              <div className="sidebar-user-name">{user?.name}</div>
+              <div className="sidebar-user-name">{user?.name || "User"}</div>
               <div className="sidebar-user-email">{user?.email}</div>
             </div>
             <button onClick={logout} className="sidebar-logout" title="Logout">
@@ -166,7 +204,7 @@ export function ResumeDetail() {
                 height="16"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
+                viewBox="0 0 0 24 24"
               >
                 <path
                   strokeLinecap="round"
@@ -182,42 +220,51 @@ export function ResumeDetail() {
 
       {/* Main Content */}
       <main className="resume-detail-main">
-        {/* Loading State */}
-        {isLoading && (
-          <div className="resume-detail-loading">
-            <div className="resume-detail-loading-spinner"></div>
-            <p>Loading resume...</p>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && !isLoading && (
-          <div style={{ padding: "32px 48px" }}>
-            <div className="resume-detail-error">
-              <div className="resume-detail-error-icon">❌</div>
-              <h2>Resume Not Found</h2>
-              <p>{error}</p>
-              <button
-                onClick={() => navigate("/resumes")}
-                className="btn btn-primary"
+        {/* Always show header — even during loading */}
+        <div className="resume-detail-header">
+          <div className="resume-detail-header-content">
+            <button
+              onClick={() => navigate("/resumes")}
+              className="resume-detail-back"
+            >
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                Back to My Resumes
-              </button>
-            </div>
-          </div>
-        )}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back to My Resumes
+            </button>
 
-        {/* Resume Content */}
-        {resume && !isLoading && !error && (
-          <>
-            {/* Header */}
-            <div className="resume-detail-header">
-              <div className="resume-detail-header-content">
-                <a
-                  onClick={() => navigate("/resumes")}
-                  className="resume-detail-back"
-                  style={{ cursor: "pointer" }}
-                >
+            <h1 className="resume-detail-title">
+              {isLoading ? "Loading resume..." : resume?.fileName}
+            </h1>
+
+            {isLoading ? (
+              <div className="resume-detail-meta" style={{ opacity: 0.6 }}>
+                <Skeleton width="180px" height="14px" />
+                <Skeleton
+                  width="80px"
+                  height="14px"
+                  style={{ marginLeft: "24px" }}
+                />
+                <Skeleton
+                  width="100px"
+                  height="14px"
+                  style={{ marginLeft: "24px" }}
+                />
+              </div>
+            ) : (
+              <div className="resume-detail-meta">
+                <div className="resume-detail-meta-item">
                   <svg
                     width="16"
                     height="16"
@@ -229,89 +276,90 @@ export function ResumeDetail() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  Back to My Resumes
-                </a>
-
-                <h1 className="resume-detail-title">{resume.fileName}</h1>
-
-                <div className="resume-detail-meta">
-                  <div className="resume-detail-meta-item">
-                    <svg
-                      width="16"
-                      height="16"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    {formatDate(resume.uploadedAt)}
-                  </div>
-                  <div className="resume-detail-meta-item">
-                    <svg
-                      width="16"
-                      height="16"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      />
-                    </svg>
-                    {getFileExtension(resume.fileName)}
-                  </div>
-                  <div className="resume-detail-meta-item">
-                    <svg
-                      width="16"
-                      height="16"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
-                      />
-                    </svg>
-                    {formatFileSize(resume.fileSizeBytes)}
-                  </div>
+                  {formatDate(resume!.uploadedAt)}
+                </div>
+                <div className="resume-detail-meta-item">
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
+                  </svg>
+                  {getFileExtension(resume!.fileName)}
+                </div>
+                <div className="resume-detail-meta-item">
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
+                    />
+                  </svg>
+                  {formatFileSize(resume!.fileSizeBytes)}
                 </div>
               </div>
+            )}
+          </div>
 
-              <div className="resume-detail-actions">
-                <button
-                  onClick={() =>
-                    navigate(`/create-analysis?resumeId=${resume.id}`)
-                  }
-                  className="btn btn-primary"
-                >
-                  Create Analysis
-                </button>
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="btn"
-                  style={{ background: "#7F1D1D", color: "#FEE2E2" }}
-                >
-                  Delete
-                </button>
-              </div>
+          <div className="resume-detail-actions">
+            <button
+              onClick={() => navigate(`/create-analysis?resumeId=${id}`)}
+              className="btn btn-primary"
+              disabled={isLoading}
+            >
+              Create Analysis
+            </button>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="btn"
+              disabled={isLoading}
+              style={{
+                background: isLoading ? "#666" : "#7F1D1D",
+                color: "#FEE2E2",
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+
+        {/* Only the content area uses skeleton */}
+        {isLoading ? (
+          <ContentSkeleton />
+        ) : error ? (
+          <div className="resume-detail-error-container">
+            <div className="resume-detail-error">
+              <div className="resume-detail-error-icon">Error</div>
+              <h2>Resume Not Found</h2>
+              <p>{error}</p>
+              <button
+                onClick={() => navigate("/resumes")}
+                className="btn btn-primary"
+              >
+                Back to My Resumes
+              </button>
             </div>
-
-            {/* Content */}
+          </div>
+        ) : (
+          resume && (
             <div className="resume-detail-content">
               {/* Info Cards */}
               <div className="resume-info-grid">
@@ -334,12 +382,12 @@ export function ResumeDetail() {
                 <div className="resume-info-card">
                   <div className="resume-info-card-label">Status</div>
                   <div className="resume-info-card-value status active">
-                    ✓ Active
+                    Active
                   </div>
                 </div>
               </div>
 
-              {/* Resume Content */}
+              {/* Resume Preview */}
               <div className="resume-content-section">
                 <h2>
                   <svg
@@ -365,17 +413,17 @@ export function ResumeDetail() {
                   </div>
                 ) : (
                   <div className="resume-content-empty">
-                    <div className="resume-content-empty-icon">📄</div>
+                    <div className="resume-content-empty-icon">Document</div>
                     <p>No content preview available for this resume</p>
                   </div>
                 )}
               </div>
             </div>
-          </>
+          )
         )}
       </main>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {showDeleteModal && resume && (
         <div className="modal-overlay">
           <div className="modal">

@@ -6,17 +6,66 @@ import { useAuth } from "../context/AuthContext";
 import jobService from "../services/jobService";
 import { getErrorMessage } from "../utils/api";
 import type { Job } from "../types";
+import { Skeleton } from "../components/Skeleton";
+import { useToast } from "../context/ToastContext";
+
+// Skeleton for Job Cards
+function SkeletonJobCard() {
+  return (
+    <div
+      style={{
+        background: "#161b26",
+        border: "1px solid #2d3748",
+        borderRadius: "12px",
+        padding: "24px",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+          marginBottom: "16px",
+        }}
+      >
+        <Skeleton width="48px" height="48px" borderRadius="8px" />
+        <div style={{ flex: 1 }}>
+          <Skeleton width="70%" height="20px" style={{ marginBottom: "8px" }} />
+          <Skeleton width="50%" height="16px" />
+        </div>
+      </div>
+      <Skeleton width="100%" height="60px" style={{ marginBottom: "16px" }} />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Skeleton width="100px" height="14px" />
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Skeleton width="80px" height="36px" borderRadius="6px" />
+          <Skeleton width="40px" height="36px" borderRadius="6px" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function JobList() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { showToast } = useToast();
 
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "company">("date");
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
@@ -25,10 +74,13 @@ export function JobList() {
     { name: "Analysis", path: "/analyses", icon: "📊" },
   ];
 
-  // Load jobs on mount
   useEffect(() => {
     loadJobs();
   }, []);
+
+  useEffect(() => {
+    filterAndSortJobs();
+  }, [jobs, searchQuery, sortBy]);
 
   const loadJobs = async () => {
     setIsLoading(true);
@@ -44,12 +96,39 @@ export function JobList() {
     }
   };
 
-  const handleDelete = async (id: number, jobTitle: string) => {
+  const filterAndSortJobs = () => {
+    let filtered = [...jobs];
+
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (job) =>
+          job.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.companyName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (sortBy === "date") {
+      filtered.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    } else if (sortBy === "company") {
+      filtered.sort((a, b) => a.companyName.localeCompare(b.companyName));
+    }
+
+    setFilteredJobs(filtered);
+  };
+
+  const handleDelete = async (
+    id: number,
+    jobTitle: string,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+
     if (
       !window.confirm(
-        `Are you sure you want to delete "${jobTitle}" at ${
-          jobs.find((j) => j.id === id)?.companyName
-        }?`
+        `Are you sure you want to delete "${jobTitle}"? This action cannot be undone.`
       )
     ) {
       return;
@@ -59,10 +138,10 @@ export function JobList() {
 
     try {
       await jobService.delete(id);
-      setJobs(jobs.filter((j) => j.id !== id));
-      console.log("✅ Job deleted");
+      setJobs((prev) => prev.filter((j) => j.id !== id));
+      showToast("Job deleted successfully", "success");
     } catch (err) {
-      alert(getErrorMessage(err));
+      showToast(getErrorMessage(err), "error");
     } finally {
       setDeletingId(null);
     }
@@ -136,7 +215,7 @@ export function JobList() {
         <div className="sidebar-header">
           <div className="nav-logo">
             <div className="nav-icon">W</div>
-            <span className="nav-brand">WeavThruResume</span>
+            <span className="nav-brand">WeavThru</span>
           </div>
         </div>
 
@@ -186,55 +265,89 @@ export function JobList() {
 
       {/* Main Content */}
       <main className="job-list-main">
-        <div className="job-list-header">
-          <div className="job-list-header-content">
-            <h1>Job Descriptions</h1>
-            <p>Manage and analyze job postings</p>
+        <div className="dashboard-header">
+          <div>
+            <h1>Job Descriptions 💼</h1>
+            <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
+              Manage and analyze job postings
+            </p>
           </div>
           <button
             onClick={() => navigate("/add-job")}
             className="btn btn-primary"
+            style={{ marginTop: "16px" }}
           >
-            Add Job Description
+            + Add Job Description
           </button>
         </div>
 
         <div className="job-list-content">
-          {/* Loading State */}
-          {isLoading && (
-            <div className="job-loading">
-              <div className="job-loading-spinner"></div>
-              <p>Loading jobs...</p>
-            </div>
-          )}
-
           {/* Error State */}
-          {error && !isLoading && (
-            <div className="alert alert-error">{error}</div>
-          )}
+          {error && <div className="alert alert-error">{error}</div>}
 
-          {/* Empty State */}
-          {!isLoading && !error && jobs.length === 0 && (
-            <div className="job-empty">
-              <div className="job-empty-icon">💼</div>
-              <h2>No job descriptions yet</h2>
-              <p>
-                Add your first job posting to start analyzing against your
-                resume
-              </p>
-              <button
-                onClick={() => navigate("/add-job")}
-                className="btn btn-primary btn-large"
-              >
-                Add Your First Job
-              </button>
+          {/* Search & Sort - ALWAYS visible */}
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              marginBottom: "24px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ flex: "1", minWidth: "250px" }}>
+              <input
+                type="text"
+                placeholder="Search by job title or company..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px 16px",
+                  background: "#161b26",
+                  border: "1px solid #2d3748",
+                  borderRadius: "8px",
+                  color: "#f7f4ed",
+                  fontSize: "14px",
+                  outline: "none",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "#5B9FFF")}
+                onBlur={(e) => (e.target.style.borderColor = "#2d3748")}
+              />
+            </div>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "date" | "company")}
+              style={{
+                padding: "12px 16px",
+                background: "#161b26",
+                border: "1px solid #2d3748",
+                borderRadius: "8px",
+                color: "#f7f4ed",
+                fontSize: "14px",
+                cursor: "pointer",
+                outline: "none",
+              }}
+            >
+              <option value="date">Sort by Date</option>
+              <option value="company">Sort by Company</option>
+            </select>
+          </div>
+
+          {/* Loading State with Skeleton */}
+          {isLoading && (
+            <div className="job-grid">
+              <SkeletonJobCard />
+              <SkeletonJobCard />
+              <SkeletonJobCard />
+              <SkeletonJobCard />
             </div>
           )}
 
           {/* Job Grid */}
-          {!isLoading && !error && jobs.length > 0 && (
+          {!isLoading && filteredJobs.length > 0 && (
             <div className="job-grid">
-              {jobs.map((job) => (
+              {filteredJobs.map((job) => (
                 <div
                   key={job.id}
                   className="job-card"
@@ -275,10 +388,7 @@ export function JobList() {
                       </button>
                       <button
                         className="job-card-action-btn danger"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(job.id, job.jobTitle);
-                        }}
+                        onClick={(e) => handleDelete(job.id, job.jobTitle, e)}
                         disabled={deletingId === job.id}
                       >
                         {deletingId === job.id ? "..." : "🗑️"}
@@ -287,6 +397,39 @@ export function JobList() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Empty State - No Results */}
+          {!isLoading && filteredJobs.length === 0 && jobs.length > 0 && (
+            <div className="job-empty">
+              <div className="job-empty-icon">🔍</div>
+              <h2>No jobs found</h2>
+              <p>Try adjusting your search query</p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="btn btn-secondary"
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
+
+          {/* Empty State - No Jobs */}
+          {!isLoading && jobs.length === 0 && (
+            <div className="job-empty">
+              <div className="job-empty-icon">💼</div>
+              <h2>No job descriptions yet</h2>
+              <p>
+                Add your first job posting to start analyzing against your
+                resume
+              </p>
+              <button
+                onClick={() => navigate("/add-job")}
+                className="btn btn-primary btn-large"
+              >
+                Add Your First Job
+              </button>
             </div>
           )}
         </div>

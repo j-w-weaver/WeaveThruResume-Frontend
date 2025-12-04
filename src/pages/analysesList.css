@@ -1,0 +1,278 @@
+/* src/pages/analysesList.css */
+
+/* Analyses List Page */
+.analyses-list-page {
+  display: flex;
+  min-height: 100vh;
+  background: #0b0f19;
+}
+
+.analyses-list-main {
+  flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
+}
+
+.analyses-list-header {
+  padding: 32px 48px;
+  border-bottom: 1px solid #2d3748;
+}
+
+.analyses-list-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #f7f4ed;
+  margin-bottom: 6px;
+}
+
+.analyses-list-subtitle {
+  color: #9a9891;
+  font-size: 15px;
+}
+
+.analyses-list-content {
+  padding: 32px 48px;
+  max-width: 1400px;
+}
+
+/* Loading & Error States */
+.analyses-loading {
+  text-align: center;
+  padding: 64px 32px;
+  color: #9a9891;
+}
+
+.analyses-error {
+  background: #7f1d1d;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  color: #fee2e2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Analyses Grid */
+.analyses-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.analysis-card {
+  background: #161b26;
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.analysis-card:hover {
+  border-color: #5b9fff;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.analysis-score-badge {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 4px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.analysis-score-badge.high {
+  border-color: #10b981;
+}
+
+.analysis-score-badge.medium {
+  border-color: #f59e0b;
+}
+
+.analysis-score-badge.low {
+  border-color: #ef4444;
+}
+
+.analysis-score-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.analysis-score-value.high {
+  color: #10b981;
+}
+
+.analysis-score-value.medium {
+  color: #f59e0b;
+}
+
+.analysis-score-value.low {
+  color: #ef4444;
+}
+
+.analysis-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.analysis-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f7f4ed;
+  margin-bottom: 8px;
+}
+
+.analysis-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  color: #9a9891;
+  font-size: 14px;
+}
+
+.analysis-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.analysis-arrow {
+  color: #5b9fff;
+  flex-shrink: 0;
+}
+
+/* Empty State */
+.analyses-empty {
+  background: #161b26;
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  padding: 64px 32px;
+  text-align: center;
+}
+
+.analyses-empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.analyses-empty h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #f7f4ed;
+  margin-bottom: 12px;
+}
+
+.analyses-empty p {
+  color: #9a9891;
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+
+/* Filters & Actions Bar */
+.analyses-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.analyses-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-button {
+  background: #161b26;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: #9a9891;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-button:hover {
+  border-color: #5b9fff;
+  color: #f7f4ed;
+}
+
+.filter-button.active {
+  background: #5b9fff;
+  border-color: #5b9fff;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .analyses-list-header,
+  .analyses-list-content {
+    padding: 24px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .analyses-list-main {
+    margin-left: 0;
+  }
+
+  .analyses-list-header {
+    padding: 20px 20px 20px 60px;
+  }
+
+  .analyses-list-content {
+    padding: 20px;
+  }
+
+  .analysis-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .analysis-score-badge {
+    width: 60px;
+    height: 60px;
+  }
+
+  .analysis-score-value {
+    font-size: 18px;
+  }
+
+  .analysis-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .analyses-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .analyses-list-header {
+    padding: 16px 16px 16px 56px;
+  }
+
+  .analyses-list-title {
+    font-size: 24px;
+  }
+
+  .analysis-title {
+    font-size: 16px;
+  }
+}

@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import resumeService from "../services/resumeService";
+import jobService from "../services/jobService";
+import analysisService from "../services/analysisService";
+import { getErrorMessage } from "../utils/api";
+import type { Resume, Job, AnalysisSummary } from "../types";
+import { SkeletonStatCard, SkeletonAnalysisCard } from "../components/Skeleton";
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -8,27 +14,18 @@ export function Dashboard() {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // ✅ Add state for data
+  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const navItems = [
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: "🏠",
-    },
-    {
-      name: "My Resumes",
-      path: "/resumes",
-      icon: "📄",
-    },
-    {
-      name: "Job Descriptions",
-      path: "/jobs",
-      icon: "💼",
-    },
-    {
-      name: "Analysis",
-      path: "/create-analyses",
-      icon: "📊",
-    },
+    { name: "Dashboard", path: "/dashboard", icon: "🏠" },
+    { name: "My Resumes", path: "/resumes", icon: "📄" },
+    { name: "Job Descriptions", path: "/jobs", icon: "💼" },
+    { name: "Analysis", path: "/analyses", icon: "📊" },
   ];
 
   const quickActions = [
@@ -38,7 +35,7 @@ export function Dashboard() {
         "Upload your resume to start getting AI-powered recommendations",
       icon: "↑",
       color: "blue",
-      path: "/upload-resume",
+      path: "/resumes",
     },
     {
       title: "My Resumes",
@@ -59,13 +56,41 @@ export function Dashboard() {
       description: "Get AI-powered recommendations",
       icon: "📊",
       color: "orange",
-      path: "/create-analyses",
+      path: "/create-analysis",
     },
   ];
 
+  // ✅ Load dashboard data on mount
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // Load all data in parallel
+      const [resumesData, jobsData, analysesData] = await Promise.all([
+        resumeService.getMyResumes(),
+        jobService.getMyJobs(), // We'll add this method next
+        analysisService.getMyAnalyses(),
+      ]);
+
+      setResumes(resumesData);
+      setJobs(jobsData);
+      setAnalyses(analysesData);
+    } catch (err) {
+      setError(getErrorMessage(err));
+      console.error("Failed to load dashboard data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleNavigation = (path: string) => {
     navigate(path);
-    setIsMobileMenuOpen(false); // Close mobile menu after navigation
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -105,7 +130,6 @@ export function Dashboard() {
 
       {/* Sidebar */}
       <aside className={`sidebar ${isMobileMenuOpen ? "mobile-open" : ""}`}>
-        {/* Logo */}
         <div className="sidebar-header">
           <div className="nav-logo">
             <div className="nav-icon">W</div>
@@ -113,7 +137,6 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="sidebar-nav">
           {navItems.map((item) => (
             <button
@@ -129,7 +152,6 @@ export function Dashboard() {
           ))}
         </nav>
 
-        {/* User Profile */}
         <div className="sidebar-footer">
           <div className="sidebar-user">
             <div className="sidebar-avatar">
@@ -161,18 +183,31 @@ export function Dashboard() {
 
       {/* Main Content */}
       <main className="dashboard-main">
-        {/* Header */}
         <div className="dashboard-header">
           <h1>Welcome back, {user?.name}! 👋</h1>
           <p>Transform your resume with AI-powered insights</p>
         </div>
 
-        {/* Content */}
         <div className="dashboard-content">
+          {/* Error State */}
+          {error && (
+            <div
+              style={{
+                background: "#7F1D1D",
+                border: "1px solid #FEE2E2",
+                borderRadius: "8px",
+                padding: "16px",
+                marginBottom: "24px",
+                color: "#FEE2E2",
+              }}
+            >
+              ❌ {error}
+            </div>
+          )}
+
           {/* Quick Actions Section */}
           <div className="dashboard-section">
             <h2 className="dashboard-section-title">Quick Actions</h2>
-
             <div className="dashboard-grid">
               {quickActions.map((action) => (
                 <div
@@ -194,21 +229,118 @@ export function Dashboard() {
           <div className="dashboard-section">
             <h2 className="dashboard-section-title">Your Progress</h2>
 
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-number blue">0</div>
-                <div className="stat-label">Resumes Uploaded</div>
+            {isLoading ? (
+              <div className="stats-grid">
+                <SkeletonStatCard />
+                <SkeletonStatCard />
+                <SkeletonStatCard />
               </div>
-              <div className="stat-card">
-                <div className="stat-number purple">0</div>
-                <div className="stat-label">Jobs Tracked</div>
+            ) : (
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-number blue">{resumes.length}</div>
+                  <div className="stat-label">Resumes Uploaded</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-number purple">{jobs.length}</div>
+                  <div className="stat-label">Jobs Tracked</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-number green">{analyses.length}</div>
+                  <div className="stat-label">AI Analyses</div>
+                </div>
               </div>
-              <div className="stat-card">
-                <div className="stat-number green">0</div>
-                <div className="stat-label">AI Analyses</div>
+            )}
+          </div>
+
+          {/* Recent Analyses Section */}
+          {isLoading ? (
+            <div className="dashboard-section">
+              <h2 className="dashboard-section-title">Recent Analyses</h2>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                }}
+              >
+                <SkeletonAnalysisCard />
+                <SkeletonAnalysisCard />
+                <SkeletonAnalysisCard />
               </div>
             </div>
-          </div>
+          ) : !isLoading && analyses.length > 0 ? (
+            <div className="dashboard-section">
+              <h2 className="dashboard-section-title">Recent Analyses</h2>
+              <div
+                style={{
+                  background: "#161b26",
+                  border: "1px solid #2d3748",
+                  borderRadius: "10px",
+                  padding: "16px",
+                }}
+              >
+                {analyses.slice(0, 5).map((analysis) => (
+                  <div
+                    key={analysis.id}
+                    onClick={() => navigate(`/analysis/${analysis.id}`)}
+                    style={{
+                      padding: "16px",
+                      borderBottom: "1px solid #2d3748",
+                      cursor: "pointer",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = "#1e2533")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "transparent")
+                    }
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "16px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "24px",
+                          fontWeight: "bold",
+                          color:
+                            analysis.matchScore >= 80
+                              ? "#10B981"
+                              : analysis.matchScore >= 60
+                              ? "#F59E0B"
+                              : "#EF4444",
+                        }}
+                      >
+                        {analysis.matchScore}%
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            color: "#f7f4ed",
+                            fontWeight: "600",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {analysis.industry}
+                          {analysis.specialization &&
+                            ` - ${analysis.specialization}`}
+                        </div>
+                        <div style={{ color: "#9a9891", fontSize: "13px" }}>
+                          {analysis.gapCount} gaps •{" "}
+                          {analysis.recommendationCount} recommendations
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </main>
     </div>
