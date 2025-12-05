@@ -69,7 +69,7 @@ export function Register() {
       >
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <div className="nav-icon" style={{ margin: "0 auto 16px" }}>
-            W
+            FR
           </div>
           <h1
             style={{

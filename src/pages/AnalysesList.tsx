@@ -162,8 +162,8 @@ export function AnalysesList() {
       <aside className={`sidebar ${isMobileMenuOpen ? "mobile-open" : ""}`}>
         <div className="sidebar-header">
           <div className="nav-logo">
-            <div className="nav-icon">W</div>
-            <span className="nav-brand">WeavThru</span>
+            <div className="nav-icon">FR</div>
+            <span className="nav-brand">Fluid Resume</span>
           </div>
         </div>
 

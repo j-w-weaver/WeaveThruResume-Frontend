@@ -53,8 +53,8 @@ export function Landing() {
       <nav className="nav">
         <div className="nav-content">
           <a href="/" className="nav-logo">
-            <div className="nav-icon">W</div>
-            <span className="nav-brand">WeavThruResume</span>
+            <div className="nav-icon">FR</div>
+            <span className="nav-brand">Fluid Resume</span>
           </a>
 
           <div className="nav-links">
@@ -213,8 +213,8 @@ export function Landing() {
           <div className="footer-grid">
             <div className="footer-brand">
               <div className="nav-logo">
-                <div className="nav-icon">W</div>
-                <span className="nav-brand">WeavThruResume</span>
+                <div className="nav-icon">FR</div>
+                <span className="nav-brand">Fluid Resume</span>
               </div>
               <p>AI-powered resume optimization</p>
             </div>

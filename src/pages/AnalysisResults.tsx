@@ -194,7 +194,7 @@ export function AnalysisResults() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `WeavThru_Resume_${
+      a.download = `Fluid_Resume_${
         analysis.resumeId || "Updated"
       }_${Date.now()}.docx`;
       a.click();
@@ -279,8 +279,8 @@ export function AnalysisResults() {
       <aside className={`sidebar ${isMobileMenuOpen ? "mobile-open" : ""}`}>
         <div className="sidebar-header">
           <div className="nav-logo">
-            <div className="nav-icon">W</div>
-            <span className="nav-brand">WeavThru</span>
+            <div className="nav-icon">FR</div>
+            <span className="nav-brand">Fluid Resume</span>
           </div>
         </div>
 
