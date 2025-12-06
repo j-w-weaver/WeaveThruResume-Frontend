@@ -8,12 +8,11 @@ import resumeService from "../services/resumeService";
 import { getErrorMessage } from "../utils/api";
 import type { Resume } from "../types";
 import { Skeleton } from "../components/Skeleton";
+import { ConfirmModal } from "../components/ConfirmModal";
 
-// Only the main content area uses skeleton
 function ContentSkeleton() {
   return (
     <div className="resume-detail-content">
-      {/* Info Cards Skeleton */}
       <div className="resume-info-grid">
         {[1, 2, 3].map((i) => (
           <div key={i} className="resume-info-card">
@@ -27,7 +26,6 @@ function ContentSkeleton() {
         ))}
       </div>
 
-      {/* Resume Preview Skeleton */}
       <div className="resume-content-section">
         <Skeleton
           width="260px"
@@ -59,9 +57,11 @@ export function ResumeDetail() {
   const [resume, setResume] = useState<Resume | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Confirm modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
@@ -94,6 +94,7 @@ export function ResumeDetail() {
 
   const handleDelete = async () => {
     if (!resume) return;
+
     setIsDeleting(true);
     try {
       await resumeService.delete(resume.id);
@@ -101,7 +102,9 @@ export function ResumeDetail() {
       navigate("/resumes");
     } catch (err) {
       showToast(getErrorMessage(err), "error");
+    } finally {
       setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -132,7 +135,7 @@ export function ResumeDetail() {
 
   return (
     <div className="resume-detail-page">
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu */}
       <button
         className="mobile-menu-btn"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -159,7 +162,6 @@ export function ResumeDetail() {
         )}
       </button>
 
-      {/* Overlay */}
       <div
         className={`sidebar-overlay ${isMobileMenuOpen ? "active" : ""}`}
         onClick={() => setIsMobileMenuOpen(false)}
@@ -204,7 +206,7 @@ export function ResumeDetail() {
                 height="16"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 0 24 24"
+                viewBox="0 0 24 24"
               >
                 <path
                   strokeLinecap="round"
@@ -220,7 +222,7 @@ export function ResumeDetail() {
 
       {/* Main Content */}
       <main className="resume-detail-main">
-        {/* Always show header — even during loading */}
+        {/* Header — always visible */}
         <div className="resume-detail-header">
           <div className="resume-detail-header-content">
             <button
@@ -341,7 +343,7 @@ export function ResumeDetail() {
           </div>
         </div>
 
-        {/* Only the content area uses skeleton */}
+        {/* Content Area */}
         {isLoading ? (
           <ContentSkeleton />
         ) : error ? (
@@ -361,7 +363,6 @@ export function ResumeDetail() {
         ) : (
           resume && (
             <div className="resume-detail-content">
-              {/* Info Cards */}
               <div className="resume-info-grid">
                 <div className="resume-info-card">
                   <div className="resume-info-card-label">File Type</div>
@@ -387,7 +388,6 @@ export function ResumeDetail() {
                 </div>
               </div>
 
-              {/* Resume Preview */}
               <div className="resume-content-section">
                 <h2>
                   <svg
@@ -423,35 +423,23 @@ export function ResumeDetail() {
         )}
       </main>
 
-      {/* Delete Modal */}
-      {showDeleteModal && resume && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Delete Resume?</h3>
-            <p>
-              Are you sure you want to delete <strong>{resume.fileName}</strong>
-              ? This action cannot be undone.
-            </p>
-            <div className="modal-actions">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="btn btn-secondary"
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="btn"
-                style={{ background: "#7F1D1D", color: "#FEE2E2" }}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete Resume"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Reusable Confirm Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Resume?"
+        message={
+          <span>
+            Are you sure you want to delete <strong>{resume?.fileName}</strong>?
+            This action cannot be undone.
+          </span>
+        }
+        confirmText="Delete Resume"
+        cancelText="Cancel"
+        confirmButtonStyle="danger"
+        isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 }

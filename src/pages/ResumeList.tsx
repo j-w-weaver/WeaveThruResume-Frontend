@@ -7,6 +7,7 @@ import { getErrorMessage } from "../utils/api";
 import { SkeletonList } from "../components/Skeleton";
 import type { Resume } from "../types";
 import { useToast } from "../context/ToastContext";
+import { ConfirmModal } from "../components/ConfirmModal";
 
 export function ResumeList() {
   const navigate = useNavigate();
@@ -22,6 +23,12 @@ export function ResumeList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // NEW: modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
@@ -94,6 +101,31 @@ export function ResumeList() {
       showToast(`Failed to delete: ${getErrorMessage(err)}`, "error");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  // NEW: open modal instead of window.confirm
+  const openDeleteModal = (id: number) => {
+    setDeleteTargetId(id);
+    setShowDeleteModal(true);
+  };
+
+  // NEW: real delete after confirm
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+
+    setDeletingId(deleteTargetId);
+
+    try {
+      await resumeService.delete(deleteTargetId);
+      setResumes((prev) => prev.filter((a) => a.id !== deleteTargetId));
+      showToast("Analysis deleted successfully", "success");
+    } catch (err) {
+      showToast(`Failed to delete: ${getErrorMessage(err)}`, "error");
+    } finally {
+      setDeletingId(null);
+      setShowDeleteModal(false);
+      setDeleteTargetId(null);
     }
   };
 
@@ -427,7 +459,7 @@ export function ResumeList() {
                     </button>
 
                     <button
-                      onClick={(e) => handleDelete(resume.id, e)}
+                      onClick={() => openDeleteModal(resume.id)}
                       disabled={deletingId === resume.id}
                       style={{
                         background: "transparent",
@@ -540,6 +572,21 @@ export function ResumeList() {
           )}
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Analysis?"
+        message="Are you sure you want to delete this analysis? This action cannot be undone."
+        confirmText="Delete Analysis"
+        cancelText="Cancel"
+        confirmButtonStyle="danger"
+        isLoading={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setDeleteTargetId(null);
+        }}
+      />
     </div>
   );
 }

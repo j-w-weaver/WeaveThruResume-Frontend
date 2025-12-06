@@ -389,7 +389,7 @@ export function CreateAnalysis() {
 
                   {selectedResume && (
                     <div className="selected-item-preview">
-                      <div className="selected-item-icon resume">Document</div>
+                      <div className="selected-item-icon resume">📄</div>
                       <div className="selected-item-info">
                         <div className="selected-item-title">
                           {selectedResume.fileName}
@@ -440,7 +440,7 @@ export function CreateAnalysis() {
 
                   {selectedJob && (
                     <div className="selected-item-preview">
-                      <div className="selected-item-icon job">Briefcase</div>
+                      <div className="selected-item-icon job">💼</div>
                       <div className="selected-item-info">
                         <div className="selected-item-title">
                           {selectedJob.jobTitle}

@@ -7,6 +7,7 @@ import analysisService from "../services/analysisService";
 import { getErrorMessage } from "../utils/api";
 import type { AnalysisSummary } from "../types";
 import { SkeletonAnalysisCard } from "../components/Skeleton";
+import { ConfirmModal } from "../components/ConfirmModal"; // ← only new import
 import { useToast } from "../context/ToastContext";
 
 export function AnalysesList() {
@@ -25,6 +26,11 @@ export function AnalysesList() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "score">("date");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // NEW: modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
@@ -80,27 +86,28 @@ export function AnalysesList() {
     setFilteredAnalyses(filtered);
   };
 
-  const handleDelete = async (id: number, e: React.MouseEvent) => {
-    e.stopPropagation();
+  // NEW: open modal instead of window.confirm
+  const openDeleteModal = (id: number) => {
+    setDeleteTargetId(id);
+    setShowDeleteModal(true);
+  };
 
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this analysis? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+  // NEW: real delete after confirm
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
 
-    setDeletingId(id);
+    setDeletingId(deleteTargetId);
 
     try {
-      await analysisService.delete(id);
-      setAnalyses((prev) => prev.filter((a) => a.id !== id));
+      await analysisService.delete(deleteTargetId);
+      setAnalyses((prev) => prev.filter((a) => a.id !== deleteTargetId));
       showToast("Analysis deleted successfully", "success");
     } catch (err) {
       showToast(`Failed to delete: ${getErrorMessage(err)}`, "error");
     } finally {
       setDeletingId(null);
+      setShowDeleteModal(false);
+      setDeleteTargetId(null);
     }
   };
 
@@ -405,9 +412,9 @@ export function AnalysesList() {
                     </div>
                   </div>
 
-                  {/* Delete Button */}
+                  {/* Delete Button - now opens modal */}
                   <button
-                    onClick={(e) => handleDelete(analysis.id, e)}
+                    onClick={() => openDeleteModal(analysis.id)}
                     disabled={deletingId === analysis.id}
                     style={{
                       background: "transparent",
@@ -449,7 +456,8 @@ export function AnalysesList() {
             </div>
           )}
 
-          {/* Empty State - No Results */}
+          {/* Empty States */}
+          {/* ... exactly the same as you already have ... */}
           {!isLoading &&
             filteredAnalyses.length === 0 &&
             analyses.length > 0 && (
@@ -484,7 +492,6 @@ export function AnalysesList() {
               </div>
             )}
 
-          {/* Empty State - No Analyses */}
           {!isLoading && analyses.length === 0 && (
             <div
               style={{
@@ -519,6 +526,22 @@ export function AnalysesList() {
           )}
         </div>
       </main>
+
+      {/* NEW: Confirm Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Analysis?"
+        message="Are you sure you want to delete this analysis? This action cannot be undone."
+        confirmText="Delete Analysis"
+        cancelText="Cancel"
+        confirmButtonStyle="danger"
+        isLoading={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setDeleteTargetId(null);
+        }}
+      />
     </div>
   );
 }

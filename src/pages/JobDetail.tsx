@@ -8,8 +8,8 @@ import jobService from "../services/jobService";
 import { getErrorMessage } from "../utils/api";
 import type { Job } from "../types";
 import { Skeleton } from "../components/Skeleton";
+import { ConfirmModal } from "../components/ConfirmModal";
 
-// Only the main content shows skeleton
 function ContentSkeleton() {
   return (
     <div className="job-detail-content">
@@ -79,9 +79,11 @@ export function JobDetail() {
   const [job, setJob] = useState<Job | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Confirm modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
@@ -114,6 +116,7 @@ export function JobDetail() {
 
   const handleDelete = async () => {
     if (!job) return;
+
     setIsDeleting(true);
     try {
       await jobService.delete(job.id);
@@ -121,7 +124,9 @@ export function JobDetail() {
       navigate("/jobs");
     } catch (err) {
       showToast(getErrorMessage(err), "error");
+    } finally {
       setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -343,7 +348,7 @@ export function JobDetail() {
           </div>
         </div>
 
-        {/* Content Area — skeleton only here */}
+        {/* Content Area */}
         {isLoading ? (
           <ContentSkeleton />
         ) : error ? (
@@ -449,35 +454,23 @@ export function JobDetail() {
         )}
       </main>
 
-      {/* Delete Modal */}
-      {showDeleteModal && job && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Delete Job Description?</h3>
-            <p>
-              Are you sure you want to delete <strong>{job.jobTitle}</strong> at{" "}
-              <strong>{job.companyName}</strong>? This action cannot be undone.
-            </p>
-            <div className="modal-actions">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="btn btn-secondary"
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="btn"
-                style={{ background: "#7F1D1D", color: "#FEE2E2" }}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete Job"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Reusable Confirm Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Job Description?"
+        message={
+          <span>
+            Are you sure you want to delete <strong>{job?.jobTitle}</strong> at{" "}
+            <strong>{job?.companyName}</strong>? This action cannot be undone.
+          </span>
+        }
+        confirmText="Delete Job"
+        cancelText="Cancel"
+        confirmButtonStyle="danger"
+        isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 }
