@@ -7,8 +7,10 @@ import { useToast } from "../context/ToastContext";
 import analysisService from "../services/analysisService";
 import { getErrorMessage } from "../utils/api";
 import type { Analysis } from "../types";
-//import { ResumeEditorModal } from "../components/ResumeEditorModal";
+import { ResumeEditorModal } from "../components/ResumeEditorModal";
+import resumeService from "../services/resumeService";
 import { Skeleton } from "../components/Skeleton";
+import { SyncfusionResumeEditor } from "../components/SyncfusionResumeEditor";
 
 // Only content area uses skeleton
 function ContentSkeleton() {
@@ -118,13 +120,17 @@ export function AnalysisResults() {
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  //const [showEditor, setShowEditor] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [resumeHtml, setResumeHtml] = useState("");
+  const [isLoadingEditor, setIsLoadingEditor] = useState(false);
+  const [showSyncfusionEditor, setShowSyncfusionEditor] = useState(false);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
     { name: "My Resumes", path: "/resumes", icon: "📄" },
     { name: "Job Descriptions", path: "/jobs", icon: "💼" },
     { name: "Analysis", path: "/analyses", icon: "📊" },
+    { name: "Applications", path: "/applications", icon: "📋" },
   ];
 
   useEffect(() => {
@@ -147,6 +153,39 @@ export function AnalysisResults() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOpenSyncfusionEditor = () => {
+    if (!analysis) return;
+
+    const selectedRecs = analysis.recommendations
+      .filter((r) => r.selected)
+      .map((r) => ({
+        section: r.section,
+        instruction: r.instruction,
+        suggestedText: r.suggestedText,
+      }));
+
+    if (selectedRecs.length === 0) {
+      showToast("Please select at least one recommendation first", "warning");
+      return;
+    }
+
+    setShowSyncfusionEditor(true);
+  };
+
+  const handleExportFromSyncfusion = async (blob: Blob) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Resume_Edited_${Date.now()}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    showToast("Resume exported successfully!", "success");
+    setShowSyncfusionEditor(false);
   };
 
   const toggleRecommendation = async (index: number) => {
@@ -174,6 +213,51 @@ export function AnalysisResults() {
       setAnalysis({ ...analysis, recommendations: updatedRecommendations });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Handler to open the editor
+  const handlePreviewAndEdit = async () => {
+    if (!analysis) return;
+
+    setIsLoadingEditor(true);
+    try {
+      const html = await resumeService.getResumeAsHtml(analysis.resumeId);
+      setResumeHtml(html);
+      setShowEditor(true);
+    } catch (err) {
+      showToast(`Failed to load resume: ${getErrorMessage(err)}`, "error");
+    } finally {
+      setIsLoadingEditor(false);
+    }
+  };
+
+  // Handler to export the edited resume
+  const handleExportFromEditor = async (editedHtml: string) => {
+    if (!analysis) return;
+
+    try {
+      const blob = await resumeService.exportEditedResume(
+        analysis.resumeId,
+        editedHtml
+      );
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Edited_Resume_${Date.now()}.docx`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      showToast("Resume exported successfully!", "success");
+      setShowEditor(false);
+    } catch (err) {
+      showToast(`Export failed: ${getErrorMessage(err)}`, "error");
     }
   };
 
@@ -236,6 +320,43 @@ export function AnalysisResults() {
     if (score >= 80) return "Excellent Match! You're a strong candidate.";
     if (score >= 60) return "Good Match — a few improvements needed.";
     return "Needs Work — significant gaps to address.";
+  };
+
+  const handleExportWithRecommendations = async () => {
+    if (!analysis || analysis.recommendations.length === 0) {
+      showToast("Please select at least one recommendation", "warning");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Group recommendations by category
+      const recommendations = analysis.recommendations.map((rec) => ({
+        category: rec.section,
+        suggestion: rec.suggestedText,
+      }));
+
+      const blob = await resumeService.exportResumeWithRecommendations(
+        analysis.resumeId,
+        recommendations
+      );
+
+      // Download the file
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Resume_with_AI_Recommendations_${Date.now()}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      showToast("Resume exported with AI recommendations!", "success");
+    } catch (err) {
+      showToast(`Export failed: ${getErrorMessage(err)}`, "error");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const selectedCount =
@@ -582,14 +703,21 @@ export function AnalysisResults() {
 
               {/* Actions */}
               <div className="analysis-actions">
-                <button
+                {/* <button
                   onClick={handleExportResume}
+                  disabled={isExporting || selectedCount === 0}
+                  className="btn btn-primary btn-icon"
+                >
+                  {isExporting ? "Exporting..." : "📥 Export Updated Resume"}
+                </button> */}
+                <button
+                  onClick={handleExportWithRecommendations}
                   disabled={isExporting || selectedCount === 0}
                   className="btn btn-primary btn-icon"
                 >
                   {isExporting
                     ? "Exporting..."
-                    : `Export Resume (${selectedCount} changes)`}
+                    : "📥 Syncfusion Export Original Resume + AI Recommendations"}
                 </button>
                 <button
                   onClick={() => navigate("/create-analysis")}
@@ -597,11 +725,13 @@ export function AnalysisResults() {
                 >
                   Create New Analysis
                 </button>
+                {/* NEW: Preview & Edit button */}
                 <button
-                  //onClick={() => setShowEditor(true)}
-                  className="btn btn-secondary btn-icon"
+                  onClick={handleOpenSyncfusionEditor}
+                  className="btn btn-primary"
+                  disabled={selectedCount === 0}
                 >
-                  Preview & Edit
+                  ✨ Edit Resume with AI Recommendations
                 </button>
               </div>
 
@@ -620,13 +750,16 @@ export function AnalysisResults() {
           )
         )}
 
-        {/* Editor Modal */}
-        {/* <ResumeEditorModal
-          isOpen={showEditor}
-          initialContent={analysis?.generatedResumeHtml || ""}
-          onClose={() => setShowEditor(false)}
-          onExport={handleExportFromEditor}
-        /> */}
+        {/* Resume Editor Modal */}
+        <SyncfusionResumeEditor
+          isOpen={showSyncfusionEditor}
+          resumeId={analysis?.resumeId || 0}
+          recommendations={
+            analysis?.recommendations.filter((r) => r.selected) || []
+          }
+          onClose={() => setShowSyncfusionEditor(false)}
+          onExport={handleExportFromSyncfusion}
+        />
       </main>
     </div>
   );

@@ -24,7 +24,7 @@ export function ResumeList() {
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting] = useState(false);
 
   // NEW: modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -35,6 +35,7 @@ export function ResumeList() {
     { name: "My Resumes", path: "/resumes", icon: "📄" },
     { name: "Job Descriptions", path: "/jobs", icon: "💼" },
     { name: "Analysis", path: "/analyses", icon: "📊" },
+    { name: "Applications", path: "/applications", icon: "📋" },
   ];
 
   useEffect(() => {
@@ -78,30 +79,6 @@ export function ResumeList() {
     }
 
     setFilteredResumes(filtered);
-  };
-
-  const handleDelete = async (id: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this resume? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
-
-    setDeletingId(id);
-
-    try {
-      await resumeService.delete(id);
-      setResumes((prev) => prev.filter((r) => r.id !== id));
-      showToast("Resume deleted successfully", "success");
-    } catch (err) {
-      showToast(`Failed to delete: ${getErrorMessage(err)}`, "error");
-    } finally {
-      setDeletingId(null);
-    }
   };
 
   // NEW: open modal instead of window.confirm

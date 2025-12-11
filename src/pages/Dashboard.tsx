@@ -26,6 +26,7 @@ export function Dashboard() {
     { name: "My Resumes", path: "/resumes", icon: "📄" },
     { name: "Job Descriptions", path: "/jobs", icon: "💼" },
     { name: "Analysis", path: "/analyses", icon: "📊" },
+    { name: "Applications", path: "/applications", icon: "📋" },
   ];
 
   const quickActions = [

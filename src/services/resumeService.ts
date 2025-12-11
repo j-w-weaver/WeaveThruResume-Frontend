@@ -44,6 +44,43 @@ class ResumeService {
   async delete(id: number): Promise<void> {
     await api.delete(`/resume/${id}`);
   }
+
+  /**
+   * Get resume content as HTML for editing
+   */
+  async getResumeAsHtml(resumeId: number): Promise<string> {
+    const response = await api.get<{ html: string }>(
+      `/resume/${resumeId}/html`
+    );
+    return response.data.html;
+  }
+
+  /**
+   * Export edited resume as DOCX
+   */
+  async exportEditedResume(resumeId: number, html: string): Promise<Blob> {
+    const response = await api.post(
+      `/resume/${resumeId}/export`,
+      { html },
+      { responseType: "blob" }
+    );
+    return response.data;
+  }
+
+  /**
+   * Export resume with AI recommendations appended (preserves original formatting)
+   */
+  async exportResumeWithRecommendations(
+    resumeId: number,
+    recommendations: Array<{ category: string; suggestion: string }>
+  ): Promise<Blob> {
+    const response = await api.post(
+      `/resume/${resumeId}/export-with-recommendations`,
+      { recommendations },
+      { responseType: "blob" }
+    );
+    return response.data;
+  }
 }
 
 export default new ResumeService();

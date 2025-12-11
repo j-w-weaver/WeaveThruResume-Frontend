@@ -49,17 +49,6 @@ export interface ResumeUploadResponse {
 // JOB TYPES
 // ============================================
 
-export interface Job {
-  id: number;
-  jobTitle: string;
-  companyName: string;
-  jobDescriptionPreview: string;
-  jobDescriptionLength: number;
-  jobUrl?: string;
-  status: string;
-  createdAt: string;
-}
-
 export interface CreateJobRequest {
   jobTitle: string;
   companyName: string;
@@ -129,4 +118,92 @@ export interface ApiError {
   status: number;
   detail?: string;
   errors?: Record<string, string[]>;
+}
+
+export interface JobApplication {
+  id: number;
+  jobId: number;
+  jobTitle: string;
+  companyName: string;
+  status: ApplicationStatus;
+  appliedDate: string;
+  applicationMethod?: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  notes?: string;
+  interviewDate?: string;
+  interviewType?: string;
+  followUpDate?: string;
+  lastActivityDate: string;
+}
+
+export type ApplicationStatus =
+  | "Applied"
+  | "Interviewing"
+  | "Offer"
+  | "Rejected"
+  | "Withdrawn";
+
+export interface ApplicationStats {
+  applied: number;
+  interviewing: number;
+  offer: number;
+  rejected: number;
+  withdrawn: number;
+  total: number;
+}
+
+export interface ApplyToJobRequest {
+  jobId: number;
+  appliedDate?: string;
+  applicationMethod?: string;
+  notes?: string;
+}
+
+export interface UpdateApplicationStatusRequest {
+  status: ApplicationStatus;
+  interviewDate?: string;
+  interviewType?: string;
+  notes?: string;
+}
+
+// Job Application (Job Tracking)
+export interface Job {
+  id: number;
+  userId: number;
+  jobTitle: string;
+  companyName: string;
+  jobDescription: string;
+  jobDescriptionPreview: string;
+  jobDescriptionLength: number;
+  jobUrl?: string;
+  status: JobStatus;
+  appliedDate?: string;
+  applicationMethod?: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  notes?: string;
+  interviewDate?: string;
+  interviewType?: string;
+  followUpDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type JobStatus =
+  | "Interested"
+  | "Applied"
+  | "Interviewing"
+  | "Offer"
+  | "Rejected"
+  | "Withdrawn";
+
+export interface JobStats {
+  interested: number;
+  applied: number;
+  interviewing: number;
+  offer: number;
+  rejected: number;
+  withdrawn: number;
+  total: number;
 }

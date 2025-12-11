@@ -80,9 +80,10 @@ export function JobDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Confirm modal state
+  // Confirm modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const navItems = [
@@ -90,6 +91,7 @@ export function JobDetail() {
     { name: "My Resumes", path: "/resumes", icon: "📄" },
     { name: "Job Descriptions", path: "/jobs", icon: "💼" },
     { name: "Analysis", path: "/analyses", icon: "📊" },
+    { name: "Applications", path: "/applications", icon: "📋" },
   ];
 
   useEffect(() => {
@@ -130,6 +132,21 @@ export function JobDetail() {
     }
   };
 
+  const handleMarkAsApplied = async () => {
+    if (!job) return;
+
+    setIsApplying(true);
+    try {
+      await jobService.markAsApplied(job.id);
+      showToast("Marked as applied!", "success");
+      await loadJob(job.id); // refresh
+    } catch (err) {
+      showToast(getErrorMessage(err), "error");
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
   const handleNavigation = (path: string) => {
     navigate(path);
     setIsMobileMenuOpen(false);
@@ -145,9 +162,12 @@ export function JobDetail() {
     });
   };
 
-  const getWordCount = (text: string): number => {
+  const getWordCount = (text: string | undefined): number => {
+    if (!text) return 0;
     return text.trim().split(/\s+/).filter(Boolean).length;
   };
+
+  const isApplied = job && job.status !== "Interested";
 
   return (
     <div className="job-detail-page">
@@ -187,8 +207,8 @@ export function JobDetail() {
       <aside className={`sidebar ${isMobileMenuOpen ? "mobile-open" : ""}`}>
         <div className="sidebar-header">
           <div className="nav-logo">
-            <div className="nav-icon">FR</div>
-            <span className="nav-brand">Fluid Resume</span>
+            <div className="nav-icon">W</div>
+            <span className="nav-brand">WeavThru</span>
           </div>
         </div>
 
@@ -238,7 +258,7 @@ export function JobDetail() {
 
       {/* Main Content */}
       <main className="job-detail-main">
-        {/* Header — always visible */}
+        {/* Header */}
         <div className="job-detail-header">
           <div className="job-detail-header-content">
             <button
@@ -264,6 +284,21 @@ export function JobDetail() {
 
             <h1 className="job-detail-title">
               {isLoading ? "Loading job description..." : job?.jobTitle}
+              {isApplied && job?.appliedDate && (
+                <span
+                  style={{
+                    marginLeft: "16px",
+                    background: "#10B981",
+                    color: "white",
+                    padding: "6px 14px",
+                    borderRadius: "16px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                  }}
+                >
+                  Applied {formatDate(job.appliedDate)}
+                </span>
+              )}
             </h1>
 
             <div className="job-detail-company">
@@ -326,29 +361,47 @@ export function JobDetail() {
           </div>
 
           <div className="job-detail-actions">
+            {!isApplied ? (
+              <button
+                onClick={handleMarkAsApplied}
+                className="btn"
+                style={{ background: "#10B981", color: "white" }}
+                disabled={isApplying}
+              >
+                {isApplying ? "Marking..." : "Mark as Applied"}
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/applications")}
+                className="btn"
+                style={{
+                  background: "#1e3a5f",
+                  color: "#5B9FFF",
+                  border: "1px solid #5B9FFF",
+                }}
+              >
+                View in Tracker
+              </button>
+            )}
+
             <button
-              onClick={() => navigate(`/create-analysis?jobId=${id}`)}
+              onClick={() => navigate(`/create-analysis?jobId=${job?.id}`)}
               className="btn btn-primary"
-              disabled={isLoading}
             >
               Create Analysis
             </button>
+
             <button
               onClick={() => setShowDeleteModal(true)}
               className="btn"
-              disabled={isLoading}
-              style={{
-                background: isLoading ? "#444" : "#7F1D1D",
-                color: "#FEE2E2",
-                opacity: isLoading ? 0.6 : 1,
-              }}
+              style={{ background: "#7F1D1D", color: "#FEE2E2" }}
             >
               Delete
             </button>
           </div>
         </div>
 
-        {/* Content Area */}
+        {/* Content */}
         {isLoading ? (
           <ContentSkeleton />
         ) : error ? (
@@ -372,13 +425,13 @@ export function JobDetail() {
               <div className="job-stats-bar">
                 <div className="job-stat">
                   <div className="job-stat-number">
-                    {getWordCount(job.jobDescriptionPreview)}
+                    {getWordCount(job.jobDescription)}
                   </div>
                   <div className="job-stat-label">Words</div>
                 </div>
                 <div className="job-stat">
                   <div className="job-stat-number">
-                    {job.jobDescriptionLength}
+                    {job.jobDescription?.length}
                   </div>
                   <div className="job-stat-label">Characters</div>
                 </div>
@@ -393,7 +446,7 @@ export function JobDetail() {
                 <div className="job-info-card">
                   <div className="job-info-card-label">Status</div>
                   <div className="job-info-card-value status saved">
-                    Saved {job.status}
+                    {job.status}
                   </div>
                 </div>
 
@@ -445,23 +498,23 @@ export function JobDetail() {
                   </svg>
                   Full Job Description
                 </h2>
-                <div className="job-content-text">
-                  {job.jobDescriptionPreview}
-                </div>
+                <div className="job-content-text">{job.jobDescription}</div>
               </div>
             </div>
           )
         )}
       </main>
 
-      {/* Reusable Confirm Modal */}
+      {/* Confirm Delete Modal */}
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete Job Description?"
         message={
           <span>
             Are you sure you want to delete <strong>{job?.jobTitle}</strong> at{" "}
-            <strong>{job?.companyName}</strong>? This action cannot be undone.
+            <strong>{job?.companyName}</strong>?
+            <br />
+            This action cannot be undone.
           </span>
         }
         confirmText="Delete Job"

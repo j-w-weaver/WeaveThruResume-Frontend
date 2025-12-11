@@ -1,17 +1,12 @@
-// src/components/ResumeEditorModal.tsx
 import { useState } from "react";
-import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { LexicalEditor } from "./LexicalEditor";
+import "./resumeEditorModal.css";
 
 interface ResumeEditorModalProps {
   isOpen: boolean;
-  initialContent: string;
+  initialContent: string; // HTML content
   onClose: () => void;
-  onExport: (html: string) => void;
+  onExport: (editedHtml: string) => void;
 }
 
 export function ResumeEditorModal({
@@ -20,47 +15,52 @@ export function ResumeEditorModal({
   onClose,
   onExport,
 }: ResumeEditorModalProps) {
+  const [editedContent, setEditedContent] = useState(initialContent);
+  const [isExporting, setIsExporting] = useState(false);
+
   if (!isOpen) return null;
 
-  const initialConfig = {
-    namespace: "ResumeEditor",
-    theme: {
-      // Custom styling
-    },
-    onError: (error: Error) => console.error(error),
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await onExport(editedContent);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h2>Edit Resume Preview</h2>
-          <button onClick={onClose}>✕</button>
+    <div className="editor-modal-overlay" onClick={onClose}>
+      <div className="editor-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="editor-modal-header">
+          <h2>Edit Resume</h2>
+          <button onClick={onClose} className="editor-modal-close">
+            ✕
+          </button>
         </div>
 
-        <LexicalComposer initialConfig={initialConfig}>
-          <div className="editor-container">
-            {/* Toolbar */}
-            <div className="toolbar">
-              <button>Bold</button>
-              <button>Italic</button>
-              <button>Bullet List</button>
-            </div>
+        <div className="editor-modal-body">
+          <LexicalEditor
+            initialContent={initialContent}
+            onContentChange={setEditedContent}
+          />
+        </div>
 
-            {/* Editor */}
-            <RichTextPlugin
-              contentEditable={<ContentEditable className="editor-input" />}
-              placeholder={<div>Start editing...</div>}
-              ErrorBoundary={LexicalErrorBoundary}
-            />
-            <HistoryPlugin />
-            <ListPlugin />
-          </div>
-        </LexicalComposer>
-
-        <div className="modal-actions">
-          <button onClick={onClose}>Cancel</button>
-          <button onClick={() => onExport("html-content")}>Export DOCX</button>
+        <div className="editor-modal-footer">
+          <button
+            onClick={onClose}
+            className="btn btn-secondary"
+            disabled={isExporting}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleExport}
+            className="btn btn-primary"
+            disabled={isExporting}
+          >
+            {isExporting ? "Exporting..." : "Export as DOCX"}
+          </button>
         </div>
       </div>
     </div>

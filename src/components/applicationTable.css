@@ -1,0 +1,258 @@
+/* Table Container */
+.application-table-container {
+  background: #161b26;
+  border: 1px solid #2d3748;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Filters */
+.application-table-filters {
+  padding: 20px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #2d3748;
+}
+
+.application-table-search {
+  flex: 1;
+  min-width: 250px;
+}
+
+.application-table-search-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0b0f19;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  color: #f7f4ed;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.application-table-search-input:focus {
+  border-color: #5b9fff;
+}
+
+.application-table-filter-select {
+  padding: 12px 16px;
+  background: #0b0f19;
+  border: 1px solid #2d3748;
+  border-radius: 8px;
+  color: #f7f4ed;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.application-table-filter-select:focus {
+  border-color: #5b9fff;
+}
+
+/* Results Count */
+.application-table-results {
+  padding: 12px 20px;
+  color: #9a9891;
+  font-size: 13px;
+  border-bottom: 1px solid #2d3748;
+}
+
+/* Table Wrapper */
+.application-table-wrapper {
+  overflow-x: auto;
+}
+
+/* Table */
+.application-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.application-table thead {
+  background: #0b0f19;
+}
+
+.application-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9a9891;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #2d3748;
+  white-space: nowrap;
+}
+
+.application-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.application-table th.sortable:hover {
+  color: #5b9fff;
+}
+
+.application-table tbody tr {
+  border-bottom: 1px solid #2d3748;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.application-table tbody tr:hover {
+  background: #1e2533;
+}
+
+.application-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.application-table td {
+  padding: 16px 20px;
+  color: #f7f4ed;
+  font-size: 14px;
+}
+
+.application-table-job-title strong {
+  color: #f7f4ed;
+  font-weight: 600;
+}
+
+/* Status Select */
+.application-table-status-select {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.application-table-status-select:hover {
+  opacity: 0.8;
+}
+
+/* Interview */
+.application-table-interview {
+  color: #f59e0b;
+  font-size: 13px;
+}
+
+.application-table-no-interview {
+  color: #6b7280;
+}
+
+/* Actions */
+.application-table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.application-table-action-btn {
+  background: transparent;
+  border: 1px solid #2d3748;
+  border-radius: 6px;
+  padding: 8px;
+  color: #9a9891;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.application-table-action-btn:hover {
+  background: #1e2533;
+  border-color: #5b9fff;
+  color: #5b9fff;
+}
+
+.application-table-action-btn.danger:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* Empty State */
+.application-table-empty {
+  padding: 0;
+}
+
+.application-table-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
+  color: #9a9891;
+}
+
+.application-table-empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.application-table-empty-content p {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .application-table-wrapper {
+    overflow-x: visible; /* No horizontal scroll needed now */
+  }
+
+  .application-table {
+    min-width: 100%; /* Use full width */
+  }
+
+  .application-table th,
+  .application-table td {
+    padding: 12px 8px;
+  }
+
+  /* Mobile cell with stacked content */
+  .mobile-cell-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .mobile-job-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #f7f4ed;
+  }
+
+  .mobile-company {
+    font-size: 12px;
+    color: #9a9891;
+  }
+
+  .application-table-status-select {
+    font-size: 12px;
+    padding: 6px 8px;
+    min-width: 80px;
+  }
+
+  .application-table-actions {
+    gap: 6px;
+  }
+
+  .application-table-action-btn {
+    padding: 8px;
+  }
+
+  .application-table-action-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}

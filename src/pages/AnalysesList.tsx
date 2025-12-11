@@ -26,7 +26,7 @@ export function AnalysesList() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "score">("date");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting] = useState(false);
 
   // NEW: modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -37,6 +37,7 @@ export function AnalysesList() {
     { name: "My Resumes", path: "/resumes", icon: "📄" },
     { name: "Job Descriptions", path: "/jobs", icon: "💼" },
     { name: "Analysis", path: "/analyses", icon: "📊" },
+    { name: "Applications", path: "/applications", icon: "📋" },
   ];
 
   useEffect(() => {

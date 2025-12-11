@@ -17,8 +17,9 @@ import { JobDetail } from "./pages/JobDetail";
 import { CreateAnalysis } from "./pages/CreateAnalysis";
 import { AnalysisResults } from "./pages/AnalysisResults";
 import { AnalysesList } from "./pages/AnalysesList";
-import { ToastProvider } from "./context/ToastContext"; // ✅ ADD THIS
-import { ToastContainer } from "./components/Toast"; // ✅ ADD THIS
+import { ToastProvider } from "./context/ToastContext";
+import { ToastContainer } from "./components/Toast";
+import { Applications } from "./pages/Applications";
 
 function ResumesPlaceholder() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ function ResumesPlaceholder() {
     { name: "My Resumes", path: "/resumes", icon: "📄" },
     { name: "Job Descriptions", path: "/jobs", icon: "💼" },
     { name: "Analysis", path: "/analyses", icon: "📊" },
+    { name: "Applications", path: "/applications", icon: "📋" },
   ];
 
   return (
@@ -272,6 +274,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateAnalysis />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/applications"
+              element={
+                <ProtectedRoute>
+                  <Applications />
                 </ProtectedRoute>
               }
             />

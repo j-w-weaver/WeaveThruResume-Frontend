@@ -9,7 +9,6 @@ import type { Job } from "../types";
 import { Skeleton } from "../components/Skeleton";
 import { useToast } from "../context/ToastContext";
 
-// Skeleton for Job Cards
 function SkeletonJobCard() {
   return (
     <div
@@ -63,19 +62,32 @@ export function JobList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [isApplying, setIsApplying] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "company">("date");
+  const [applications, setApplications] = useState<Job[]>([]);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
     { name: "My Resumes", path: "/resumes", icon: "📄" },
     { name: "Job Descriptions", path: "/jobs", icon: "💼" },
     { name: "Analysis", path: "/analyses", icon: "📊" },
+    { name: "Applications", path: "/applications", icon: "📋" },
   ];
+
+  const loadApplications = async () => {
+    try {
+      const apps = await jobService.getMyJobs();
+      setApplications(apps);
+    } catch (err) {
+      console.error("Failed to load applications:", err);
+    }
+  };
 
   useEffect(() => {
     loadJobs();
+    loadApplications();
   }, []);
 
   useEffect(() => {
@@ -100,10 +112,11 @@ export function JobList() {
     let filtered = [...jobs];
 
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (job) =>
-          job.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          job.companyName.toLowerCase().includes(searchQuery.toLowerCase())
+          job.jobTitle.toLowerCase().includes(q) ||
+          job.companyName.toLowerCase().includes(q)
       );
     }
 
@@ -112,7 +125,7 @@ export function JobList() {
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-    } else if (sortBy === "company") {
+    } else {
       filtered.sort((a, b) => a.companyName.localeCompare(b.companyName));
     }
 
@@ -147,6 +160,27 @@ export function JobList() {
     }
   };
 
+  const handleMarkAsApplied = async (jobId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsApplying(jobId);
+
+    try {
+      await jobService.markAsApplied(jobId);
+      showToast("Marked as applied! Check Applications page", "success");
+      await loadApplications();
+    } catch (err) {
+      showToast(getErrorMessage(err), "error");
+    } finally {
+      setIsApplying(null);
+    }
+  };
+
+  const isJobApplied = (jobId: number): boolean => {
+    return applications.some(
+      (app) => app.id === jobId && app.status !== "Interested"
+    );
+  };
+
   const handleNavigation = (path: string) => {
     navigate(path);
     setIsMobileMenuOpen(false);
@@ -171,8 +205,9 @@ export function JobList() {
   };
 
   const truncateText = (text: string, maxLength: number): string => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + "...";
+    return text.length <= maxLength
+      ? text
+      : text.substring(0, maxLength) + "...";
   };
 
   return (
@@ -214,8 +249,8 @@ export function JobList() {
       <aside className={`sidebar ${isMobileMenuOpen ? "mobile-open" : ""}`}>
         <div className="sidebar-header">
           <div className="nav-logo">
-            <div className="nav-icon">FR</div>
-            <span className="nav-brand">Fluid Resume</span>
+            <div className="nav-icon">W</div>
+            <span className="nav-brand">WeavThru</span>
           </div>
         </div>
 
@@ -282,10 +317,10 @@ export function JobList() {
         </div>
 
         <div className="job-list-content">
-          {/* Error State */}
+          {/* Error */}
           {error && <div className="alert alert-error">{error}</div>}
 
-          {/* Search & Sort - ALWAYS visible */}
+          {/* Search & Sort */}
           <div
             style={{
               display: "flex",
@@ -317,7 +352,7 @@ export function JobList() {
 
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "date" | "company")}
+              onChange={(e) => setSortBy(e.target.value as any)}
               style={{
                 padding: "12px 16px",
                 background: "#161b26",
@@ -334,7 +369,7 @@ export function JobList() {
             </select>
           </div>
 
-          {/* Loading State with Skeleton */}
+          {/* Loading */}
           {isLoading && (
             <div className="job-grid">
               <SkeletonJobCard />
@@ -347,60 +382,116 @@ export function JobList() {
           {/* Job Grid */}
           {!isLoading && filteredJobs.length > 0 && (
             <div className="job-grid">
-              {filteredJobs.map((job) => (
-                <div
-                  key={job.id}
-                  className="job-card"
-                  onClick={() => navigate(`/job/${job.id}`)}
-                >
-                  <div className="job-card-header">
-                    <div className="job-company-icon">💼</div>
-                    <div className="job-card-info">
-                      <div className="job-card-title" title={job.jobTitle}>
-                        {job.jobTitle}
-                      </div>
-                      <div className="job-card-company">
-                        🏢 {job.companyName}
-                      </div>
-                    </div>
-                  </div>
+              {filteredJobs.map((job) => {
+                const applied = isJobApplied(job.id);
 
-                  <div className="job-card-preview">
-                    <p>{truncateText(job.jobDescriptionPreview, 150)}</p>
-                  </div>
+                return (
+                  <div
+                    key={job.id}
+                    className="job-card"
+                    onClick={() => navigate(`/job/${job.id}`)}
+                  >
+                    <div className="job-card-header">
+                      <div className="job-company-icon">💼</div>
+                      <div className="job-card-info">
+                        <div className="job-card-title" title={job.jobTitle}>
+                          {job.jobTitle}
+                          {applied && (
+                            <span
+                              style={{
+                                marginLeft: "10px",
+                                background: "#10B981",
+                                color: "white",
+                                padding: "4px 10px",
+                                borderRadius: "12px",
+                                fontSize: "11px",
+                                fontWeight: "600",
+                              }}
+                            >
+                              ✓ Applied
+                            </span>
+                          )}
+                        </div>
+                        <div className="job-card-company">
+                          🏢 {job.companyName}
+                        </div>
+                      </div>
+                    </div>
 
-                  <div className="job-card-meta">
-                    <div className="job-card-date">
-                      📅 {formatDate(job.createdAt)}
+                    <div className="job-card-preview">
+                      <p>
+                        {truncateText(
+                          job.jobDescriptionPreview || job.jobDescription,
+                          150
+                        )}
+                      </p>
                     </div>
-                    <div
-                      className="job-card-actions"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        className="job-card-action-btn primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/create-analysis?jobId=${job.id}`);
-                        }}
+
+                    <div className="job-card-meta">
+                      <div className="job-card-date">
+                        📅 {formatDate(job.createdAt)}
+                      </div>
+
+                      <div
+                        className="job-card-actions"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        Analyze
-                      </button>
-                      <button
-                        className="job-card-action-btn danger"
-                        onClick={(e) => handleDelete(job.id, job.jobTitle, e)}
-                        disabled={deletingId === job.id}
-                      >
-                        {deletingId === job.id ? "..." : "🗑️"}
-                      </button>
+                        {!applied ? (
+                          <button
+                            className="job-card-action-btn primary"
+                            onClick={(e) => handleMarkAsApplied(job.id, e)}
+                            disabled={isApplying === job.id}
+                            style={{
+                              background: "#10B981",
+                              color: "white",
+                              border: "none",
+                            }}
+                          >
+                            {isApplying === job.id ? "..." : "Mark Applied"}
+                          </button>
+                        ) : (
+                          <button
+                            className="job-card-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate("/applications");
+                            }}
+                            style={{
+                              background: "#1e3a5f",
+                              color: "#5B9FFF",
+                              border: "1px solid #5B9FFF",
+                            }}
+                          >
+                            View Tracker
+                          </button>
+                        )}
+
+                        <button
+                          className="job-card-action-btn primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/create-analysis?jobId=${job.id}`);
+                          }}
+                        >
+                          Analyze
+                        </button>
+
+                        <button
+                          className="job-card-action-btn danger"
+                          onClick={(e) => handleDelete(job.id, job.jobTitle, e)}
+                          disabled={deletingId === job.id}
+                        >
+                          {deletingId === job.id ? "..." : "🗑️"}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
-          {/* Empty State - No Results */}
+          {/* Empty States */}
           {!isLoading && filteredJobs.length === 0 && jobs.length > 0 && (
             <div className="job-empty">
               <div className="job-empty-icon">🔍</div>
@@ -415,7 +506,6 @@ export function JobList() {
             </div>
           )}
 
-          {/* Empty State - No Jobs */}
           {!isLoading && jobs.length === 0 && (
             <div className="job-empty">
               <div className="job-empty-icon">💼</div>

@@ -81,6 +81,7 @@ export function CreateAnalysis() {
     { name: "My Resumes", path: "/resumes", icon: "📄" },
     { name: "Job Descriptions", path: "/jobs", icon: "💼" },
     { name: "Analysis", path: "/analyses", icon: "📊" },
+    { name: "Applications", path: "/applications", icon: "📋" },
   ];
 
   useEffect(() => {
@@ -539,8 +540,8 @@ export function CreateAnalysis() {
               <div className="processing-spinner"></div>
               <h3>Creating Analysis...</h3>
               <p>
-                Our AI is comparing your resume to the job description. This
-                usually takes 30–60 seconds.
+                Our AI engine is comparing your resume to the job description.
+                This usually takes about 10–15 seconds.
               </p>
             </div>
           </div>
