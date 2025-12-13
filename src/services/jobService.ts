@@ -6,7 +6,7 @@ class JobService {
    * Create a new job application
    */
   async create(data: CreateJobRequest): Promise<Job> {
-    const response = await api.post<Job>("/jobs", data);
+    const response = await api.post<Job>("/job", data);
     return response.data;
   }
 

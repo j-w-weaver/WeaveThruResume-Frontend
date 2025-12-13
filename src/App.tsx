@@ -90,7 +90,7 @@ function ResumesPlaceholder() {
 
       <main className="dashboard-main">
         <div className="dashboard-header">
-          <h1>My Resumes 📄</h1>
+          <h2>My Resumes 📄</h2>
           <p>View and manage your uploaded resumes</p>
         </div>
 

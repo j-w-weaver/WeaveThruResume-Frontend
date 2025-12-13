@@ -185,7 +185,7 @@ export function Dashboard() {
       {/* Main Content */}
       <main className="dashboard-main">
         <div className="dashboard-header">
-          <h1>Welcome back, {user?.name}! 👋</h1>
+          <h2>Welcome back, {user?.name}! 👋</h2>
           <p>Transform your resume with AI-powered insights</p>
         </div>
 

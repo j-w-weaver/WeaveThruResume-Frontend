@@ -223,7 +223,7 @@ export function AnalysesList() {
       <main className="dashboard-main">
         <div className="dashboard-header">
           <div>
-            <h1>My Analyses 📊</h1>
+            <h2>My Analyses 📊</h2>
             <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
               View all your resume analyses
             </p>

@@ -6,12 +6,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import resumeService from "../services/resumeService";
 import { getErrorMessage } from "../utils/api";
+import { useToast } from "../context/ToastContext";
 
 export function ResumeUpload() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { showToast } = useToast();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -110,13 +112,14 @@ export function ResumeUpload() {
     try {
       await resumeService.upload(selectedFile);
       setSuccess(true);
-
+      showToast("Resume uploaded successfully!", "success");
       // Navigate to resumes list after 1.5 seconds
       setTimeout(() => {
         navigate("/resumes");
       }, 1500);
     } catch (err) {
       setError(getErrorMessage(err));
+      showToast("error uploading resume", "error");
     } finally {
       setIsUploading(false);
     }
@@ -225,6 +228,23 @@ export function ResumeUpload() {
       {/* Main Content */}
       <main className="upload-main">
         <div className="upload-header">
+          <a onClick={() => navigate("/resumes")} className="add-job-back">
+            <svg
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to Resumes
+          </a>
           <h1>Upload Resume</h1>
           <p>
             Upload your resume to get AI-powered optimization recommendations
@@ -297,16 +317,6 @@ export function ResumeUpload() {
                   </svg>
                 </button>
               </div>
-            </div>
-          )}
-
-          {/* Error Alert */}
-          {error && <div className="alert alert-error">{error}</div>}
-
-          {/* Success Alert */}
-          {success && (
-            <div className="alert alert-success">
-              ✅ Resume uploaded successfully! Redirecting...
             </div>
           )}
 

@@ -113,6 +113,15 @@ export function CreateAnalysis() {
     }
   };
 
+  const maxFileNameLength = 35; // adjust as needed
+
+  const truncateFileName = (name: string) => {
+    if (name.length <= maxFileNameLength) return name;
+    const ext = name.includes(".") ? name.slice(name.lastIndexOf(".")) : "";
+    const base = name.slice(0, name.lastIndexOf("."));
+    return base.slice(0, maxFileNameLength - ext.length - 3) + "..." + ext;
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -253,10 +262,7 @@ export function CreateAnalysis() {
       <main className="create-analysis-main">
         {/* Header — always visible instantly */}
         <div className="create-analysis-header">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="create-analysis-back"
-          >
+          <a onClick={() => navigate("/analyses")} className="add-job-back">
             <svg
               width="16"
               height="16"
@@ -271,8 +277,8 @@ export function CreateAnalysis() {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            Back to Dashboard
-          </button>
+            Back to Analyses
+          </a>
 
           <h1>Create Analysis</h1>
           <p>Analyze your resume against a job description with AI</p>
@@ -383,7 +389,8 @@ export function CreateAnalysis() {
                     <option value="">-- Select a resume --</option>
                     {resumes.map((r) => (
                       <option key={r.id} value={r.id}>
-                        {r.fileName}
+                        {truncateFileName(r.fileName)}
+                        {/* {r.fileName} */}
                       </option>
                     ))}
                   </select>
@@ -393,7 +400,8 @@ export function CreateAnalysis() {
                       <div className="selected-item-icon resume">📄</div>
                       <div className="selected-item-info">
                         <div className="selected-item-title">
-                          {selectedResume.fileName}
+                          {truncateFileName(selectedResume.fileName)}
+                          {/* {selectedResume.fileName} */}
                         </div>
                         <div className="selected-item-subtitle">
                           Uploaded{" "}

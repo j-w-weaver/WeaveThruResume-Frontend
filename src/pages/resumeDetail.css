@@ -312,7 +312,7 @@
 
 @media (max-width: 480px) {
   .resume-detail-header {
-    padding: 16px 16px 16px 56px;
+    padding: 30px;
   }
 
   .resume-detail-meta {

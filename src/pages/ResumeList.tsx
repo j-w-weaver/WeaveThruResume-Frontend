@@ -1,3 +1,4 @@
+import "./resumeList.css";
 import "../dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -127,7 +128,7 @@ export function ResumeList() {
 
   return (
     <div className="dashboard">
-      {/* Mobile Menu */}
+      {/* Mobile Menu Button */}
       <button
         className="mobile-menu-btn"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -159,7 +160,7 @@ export function ResumeList() {
         onClick={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* Sidebar */}
+      {/* Sidebar - unchanged */}
       <aside className={`sidebar ${isMobileMenuOpen ? "mobile-open" : ""}`}>
         <div className="sidebar-header">
           <div className="nav-logo">
@@ -214,16 +215,17 @@ export function ResumeList() {
 
       {/* Main Content */}
       <main className="dashboard-main">
+        {/* <div className="resume-list-container"> */}
         <div className="dashboard-header">
           <div>
-            <h1>My Resumes 📄</h1>
+            <h2>My Resumes 📄</h2>
             <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
               Manage your uploaded resumes
             </p>
           </div>
           <button
             onClick={() => navigate("/upload-resume")}
-            className="btn btn-primary"
+            className="btn btn-primary resume-upload-btn"
             style={{ marginTop: "16px" }}
           >
             + Upload New Resume
@@ -232,22 +234,10 @@ export function ResumeList() {
 
         <div className="dashboard-content">
           {/* Error */}
-          {error && (
-            <div
-              style={{
-                background: "#7F1D1D",
-                border: "1px solid #FEE2E2",
-                borderRadius: "8px",
-                padding: "16px",
-                marginBottom: "24px",
-                color: "#FEE2E2",
-              }}
-            >
-              Error {error}
-            </div>
-          )}
+          {error && <div className="resume-error">Error {error}</div>}
 
-          {/* Search & Sort — ALWAYS visible */}
+          {/* Search & Sort */}
+
           <div
             style={{
               display: "flex",
@@ -279,7 +269,7 @@ export function ResumeList() {
 
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "date" | "name")}
+              onChange={(e) => setSortBy(e.target.value as any)}
               style={{
                 padding: "12px 16px",
                 background: "#161b26",
@@ -292,57 +282,23 @@ export function ResumeList() {
               }}
             >
               <option value="date">Sort by Date</option>
-              <option value="name">Sort by Name</option>
             </select>
           </div>
 
-          {/* Only the list is loading */}
+          {/* Loading */}
           {isLoading && <SkeletonList />}
 
-          {/* List */}
+          {/* Resume List */}
           {!isLoading && filteredResumes.length > 0 && (
-            <div
-              style={{
-                background: "#161b26",
-                border: "1px solid #2d3748",
-                borderRadius: "10px",
-                overflow: "hidden",
-              }}
-            >
-              {filteredResumes.map((resume, index) => (
+            <div className="resume-list-wrapper">
+              {filteredResumes.map((resume) => (
                 <div
                   key={resume.id}
-                  style={{
-                    padding: "20px",
-                    borderBottom:
-                      index < filteredResumes.length - 1
-                        ? "1px solid #2d3748"
-                        : "none",
-                    transition: "background 0.2s",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "20px",
-                    opacity: deletingId === resume.id ? 0.5 : 1,
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#1e2533")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "transparent")
-                  }
+                  className={`resume-item ${
+                    deletingId === resume.id ? "deleting" : ""
+                  }`}
                 >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      background: "linear-gradient(135deg, #5b9fff, #4a8ae6)",
-                      borderRadius: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div className="resume-file-icon">
                     <svg
                       width="24"
                       height="24"
@@ -360,28 +316,11 @@ export function ResumeList() {
                   </div>
 
                   <div
+                    className="resume-info"
                     onClick={() => navigate(`/resumes/${resume.id}`)}
-                    style={{ flex: 1, cursor: "pointer" }}
                   >
-                    <div
-                      style={{
-                        color: "#f7f4ed",
-                        fontSize: "16px",
-                        fontWeight: "600",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      {resume.fileName}
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "16px",
-                        color: "#9a9891",
-                        fontSize: "13px",
-                        flexWrap: "wrap",
-                      }}
-                    >
+                    <div className="resume-title">{resume.fileName}</div>
+                    <div className="resume-meta">
                       <span>Date {formatDate(resume.uploadedAt)}</span>
                       <span>Size {formatFileSize(resume.fileSizeBytes)}</span>
                       <span>
@@ -391,26 +330,10 @@ export function ResumeList() {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                  <div className="resume-actions">
                     <button
                       onClick={() => navigate(`/resumes/${resume.id}`)}
-                      style={{
-                        background: "transparent",
-                        border: "1px solid #2d3748",
-                        borderRadius: "8px",
-                        padding: "10px",
-                        color: "#5B9FFF",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#1e3a5f";
-                        e.currentTarget.style.borderColor = "#5B9FFF";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.borderColor = "#2d3748";
-                      }}
+                      className="resume-action-btn"
                       title="View details"
                     >
                       <svg
@@ -438,23 +361,7 @@ export function ResumeList() {
                     <button
                       onClick={() => openDeleteModal(resume.id)}
                       disabled={deletingId === resume.id}
-                      style={{
-                        background: "transparent",
-                        border: "1px solid #2d3748",
-                        borderRadius: "8px",
-                        padding: "10px",
-                        color: "#EF4444",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#7F1D1D";
-                        e.currentTarget.style.borderColor = "#EF4444";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.borderColor = "#2d3748";
-                      }}
+                      className="resume-action-btn delete"
                       title="Delete resume"
                     >
                       <svg
@@ -478,32 +385,12 @@ export function ResumeList() {
             </div>
           )}
 
-          {/* Empty States */}
+          {/* Empty: Search no results */}
           {!isLoading && filteredResumes.length === 0 && resumes.length > 0 && (
-            <div
-              style={{
-                background: "#161B26",
-                border: "1px solid #2D3748",
-                borderRadius: "10px",
-                padding: "48px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "48px", marginBottom: "16px" }}>
-                Search
-              </div>
-              <h2
-                style={{
-                  color: "#F7F4ED",
-                  fontSize: "20px",
-                  marginBottom: "12px",
-                }}
-              >
-                No resumes found
-              </h2>
-              <p style={{ color: "#9A9891", marginBottom: "24px" }}>
-                Try adjusting your search query
-              </p>
+            <div className="resume-empty-state">
+              <div className="emoji">Search</div>
+              <h2>No resumes found</h2>
+              <p>Try adjusting your search query</p>
               <button
                 onClick={() => setSearchQuery("")}
                 className="btn btn-secondary"
@@ -513,29 +400,12 @@ export function ResumeList() {
             </div>
           )}
 
+          {/* Empty: No resumes at all */}
           {!isLoading && resumes.length === 0 && (
-            <div
-              style={{
-                background: "#161B26",
-                border: "1px solid #2D3748",
-                borderRadius: "10px",
-                padding: "48px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "64px", marginBottom: "16px" }}>
-                Document
-              </div>
-              <h2
-                style={{
-                  color: "#F7F4ED",
-                  fontSize: "24px",
-                  marginBottom: "12px",
-                }}
-              >
-                No resumes yet
-              </h2>
-              <p style={{ color: "#9A9891", marginBottom: "24px" }}>
+            <div className="resume-empty-state">
+              <div className="emoji">📄</div>
+              <h2>No resumes yet</h2>
+              <p>
                 Upload your first resume to get started with AI-powered
                 optimization
               </p>
@@ -548,16 +418,18 @@ export function ResumeList() {
             </div>
           )}
         </div>
+        {/* </div> */}
       </main>
 
+      {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={showDeleteModal}
-        title="Delete Analysis?"
-        message="Are you sure you want to delete this analysis? This action cannot be undone."
-        confirmText="Delete Analysis"
+        title="Delete Resume?"
+        message="Are you sure you want to delete this resume? This action cannot be undone."
+        confirmText="Delete Resume"
         cancelText="Cancel"
         confirmButtonStyle="danger"
-        isLoading={isDeleting}
+        isLoading={!!deletingId}
         onConfirm={confirmDelete}
         onCancel={() => {
           setShowDeleteModal(false);

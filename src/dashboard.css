@@ -158,8 +158,8 @@
 .mobile-menu-btn {
   display: none;
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 8px;
+  left: 8px;
   z-index: 101;
   background: #161b26;
   border: 1px solid #2d3748;
@@ -441,11 +441,6 @@
     margin-left: 0;
   }
 
-  /* Adjust header padding */
-  .dashboard-header {
-    padding: 20px 20px 20px 60px; /* Extra left padding for menu button */
-  }
-
   .dashboard-header h1 {
     font-size: 24px;
   }
@@ -475,7 +470,8 @@
 
 @media (max-width: 480px) {
   .dashboard-header {
-    padding: 16px 16px 16px 56px;
+    display: grid;
+    text-align: center;
   }
 
   .dashboard-content {

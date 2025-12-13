@@ -717,7 +717,7 @@ export function AnalysisResults() {
                 >
                   {isExporting
                     ? "Exporting..."
-                    : "📥 Syncfusion Export Original Resume + AI Recommendations"}
+                    : "📥 Export Original Resume + AI Recommendations at Bottom of Page"}
                 </button>
                 <button
                   onClick={() => navigate("/create-analysis")}
@@ -725,13 +725,12 @@ export function AnalysisResults() {
                 >
                   Create New Analysis
                 </button>
-                {/* NEW: Preview & Edit button */}
                 <button
                   onClick={handleOpenSyncfusionEditor}
                   className="btn btn-primary"
                   disabled={selectedCount === 0}
                 >
-                  ✨ Edit Resume with AI Recommendations
+                  ✨ Open Resume in Editor with Selected Recommendations
                 </button>
               </div>
 

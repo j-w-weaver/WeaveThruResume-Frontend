@@ -201,8 +201,8 @@
   }
 
   .applications-header {
-    padding: 20px 20px 20px 60px;
-    flex-direction: column;
+    display: grid;
+    text-align: center;
   }
 
   .applications-content {

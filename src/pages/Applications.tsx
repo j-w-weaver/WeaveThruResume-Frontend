@@ -216,7 +216,24 @@ export function Applications() {
       <main className="applications-main">
         <div className="applications-header">
           <div>
-            <h1>Job Application Tracker 📋</h1>
+            <a onClick={() => navigate("/dashboard")} className="add-job-back">
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back to Dashboard
+            </a>
+            <h2>Application Tracker 📋</h2>
             <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
               Track your job applications through the hiring process
             </p>

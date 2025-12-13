@@ -302,7 +302,7 @@ export function JobList() {
       <main className="job-list-main">
         <div className="dashboard-header">
           <div>
-            <h1>Job Descriptions 💼</h1>
+            <h2>Job Descriptions 💼</h2>
             <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
               Manage and analyze job postings
             </p>
