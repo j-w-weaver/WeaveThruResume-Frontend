@@ -1,3 +1,13 @@
+import "@syncfusion/ej2-base/styles/material.css";
+import "@syncfusion/ej2-buttons/styles/material.css";
+import "@syncfusion/ej2-inputs/styles/material.css";
+import "@syncfusion/ej2-popups/styles/material.css";
+import "@syncfusion/ej2-lists/styles/material.css";
+import "@syncfusion/ej2-navigations/styles/material.css";
+import "@syncfusion/ej2-splitbuttons/styles/material.css";
+import "@syncfusion/ej2-dropdowns/styles/material.css";
+import "@syncfusion/ej2-react-documenteditor/styles/material.css";
+import "./syncfusionResumeEditor.css";
 import { useRef, useEffect, useState } from "react";
 import {
   DocumentEditorContainerComponent,
@@ -6,7 +16,6 @@ import {
 import { registerLicense } from "@syncfusion/ej2-base";
 import "./syncfusionResumeEditor.css";
 
-// Register Syncfusion license
 registerLicense(
   "NxYtGyMROh0gHDMgDk1jXU9FaF5FVmJLYVB3WmpQdldgdVRMZVVbQX9PIiBoS35Rc0RhWXdccnRcRGVVUUdzVEFc"
 );
@@ -35,6 +44,33 @@ export function SyncfusionResumeEditor({
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState("");
   const [documentData, setDocumentData] = useState<string | null>(null);
+  const [hasInsertedRecommendations, setHasInsertedRecommendations] =
+    useState(false);
+  const [editorHeight, setEditorHeight] = useState("700px");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const calculateHeight = () => {
+      const viewportHeight = window.innerHeight;
+      const calculatedHeight = viewportHeight * 0.9 - 140; // 90vh minus header/footer
+      setEditorHeight(`${calculatedHeight}px`);
+    };
+
+    calculateHeight();
+    window.addEventListener("resize", calculateHeight);
+    return () => window.removeEventListener("resize", calculateHeight);
+  }, []);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     if (isOpen && resumeId) {
@@ -42,6 +78,13 @@ export function SyncfusionResumeEditor({
       loadDocument();
     }
   }, [isOpen, resumeId]);
+
+  // Reset flag when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setHasInsertedRecommendations(false);
+    }
+  }, [isOpen]);
 
   const loadDocument = async () => {
     setIsLoading(true);
@@ -94,12 +137,21 @@ export function SyncfusionResumeEditor({
       console.log("🔵 Opening document in editor...");
 
       try {
+        // Add document change listener to know when document is fully loaded
+        editorRef.current.documentEditor.documentChange = () => {
+          console.log("📄 Document change event fired");
+          if (!hasInsertedRecommendations && recommendations.length > 0) {
+            console.log("🔵 Document loaded, inserting recommendations...");
+            // Small delay to ensure everything is ready
+            setTimeout(() => {
+              insertRecommendationsAsComments();
+              setHasInsertedRecommendations(true);
+            }, 300);
+          }
+        };
+
         editorRef.current.documentEditor.open(documentData);
         console.log("✅ Document opened successfully");
-
-        setTimeout(() => {
-          insertRecommendationsAsComments();
-        }, 1500);
       } catch (err) {
         console.error("❌ Error opening document:", err);
         setError("Failed to open document in editor");
@@ -209,7 +261,7 @@ export function SyncfusionResumeEditor({
               <DocumentEditorContainerComponent
                 ref={editorRef}
                 enableToolbar={true}
-                height="600px"
+                height="calc(90vh - 140px)"
                 serviceUrl="https://ej2services.syncfusion.com/production/web-services/api/documenteditor/"
                 created={onEditorCreated}
               />

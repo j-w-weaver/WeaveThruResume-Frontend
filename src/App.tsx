@@ -20,6 +20,7 @@ import { AnalysesList } from "./pages/AnalysesList";
 import { ToastProvider } from "./context/ToastContext";
 import { ToastContainer } from "./components/Toast";
 import { Applications } from "./pages/Applications";
+import { Pricing } from "./pages/Pricing";
 
 function ResumesPlaceholder() {
   const navigate = useNavigate();
@@ -286,6 +287,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route path="/pricing" element={<Pricing />} />
 
             {/* Catch all - MUST BE LAST */}
             <Route path="*" element={<Navigate to="/" replace />} />

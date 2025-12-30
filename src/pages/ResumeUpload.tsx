@@ -56,11 +56,48 @@ export function ResumeUpload() {
   };
 
   // Handle file selection from input
+  // const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file && validateFile(file)) {
+  //     setSelectedFile(file);
+  //     setSuccess(false);
+  //   }
+  // };
+
+  // const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   console.log("File input changed:", file);
+
+  //   if (!file) {
+  //     console.log("No file selected");
+  //     return;
+  //   }
+
+  //   const isValid = validateFile(file);
+  //   console.log("File valid?", isValid);
+
+  //   if (isValid) {
+  //     console.log("Setting selectedFile to:", file.name);
+  //     setSelectedFile(file);
+  //     setSuccess(false);
+  //     setError(""); // Clear any errors
+  //   }
+  // };
+
   const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && validateFile(file)) {
+    console.log("File input changed:", file);
+
+    if (!file) return;
+
+    if (validateFile(file)) {
       setSelectedFile(file);
       setSuccess(false);
+
+      // ← ADD THIS: Reset the input to prevent Strict Mode double-clear
+      if (e.target) {
+        e.target.value = "";
+      }
     }
   };
 
@@ -91,6 +128,11 @@ export function ResumeUpload() {
     if (file && validateFile(file)) {
       setSelectedFile(file);
       setSuccess(false);
+
+      // Reset the hidden input too
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 

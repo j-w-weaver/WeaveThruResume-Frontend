@@ -1,4 +1,10 @@
 {
+  "compilerOptions": {
+    "jsx": "react-jsx", // Or "react" if using older React versions
+    "lib": ["dom", "es6"],
+    "moduleResolution": "node"
+    // ...existing code...
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
