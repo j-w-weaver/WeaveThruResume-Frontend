@@ -7,6 +7,8 @@ import { useAuth } from "../context/AuthContext";
 import resumeService from "../services/resumeService";
 import { getErrorMessage } from "../utils/api";
 import { useToast } from "../context/ToastContext";
+import { UpgradeModal } from "../components/UpgradeModal";
+import { useUpgradeModal } from "../hooks/useUpgradeModal";
 
 export function ResumeUpload() {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ export function ResumeUpload() {
   const { user, logout } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
+  const { modalState, handleApiError, closeModal } = useUpgradeModal();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -54,35 +57,6 @@ export function ResumeUpload() {
 
     return true;
   };
-
-  // Handle file selection from input
-  // const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file && validateFile(file)) {
-  //     setSelectedFile(file);
-  //     setSuccess(false);
-  //   }
-  // };
-
-  // const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   console.log("File input changed:", file);
-
-  //   if (!file) {
-  //     console.log("No file selected");
-  //     return;
-  //   }
-
-  //   const isValid = validateFile(file);
-  //   console.log("File valid?", isValid);
-
-  //   if (isValid) {
-  //     console.log("Setting selectedFile to:", file.name);
-  //     setSelectedFile(file);
-  //     setSuccess(false);
-  //     setError(""); // Clear any errors
-  //   }
-  // };
 
   const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -160,6 +134,10 @@ export function ResumeUpload() {
         navigate("/resumes");
       }, 1500);
     } catch (err) {
+      if (handleApiError(err)) {
+        setIsUploading(false);
+        return; // Modal will show
+      }
       setError(getErrorMessage(err));
       showToast("error uploading resume", "error");
     } finally {
@@ -391,6 +369,14 @@ export function ResumeUpload() {
           </div>
         </div>
       </main>
+      <UpgradeModal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        feature={modalState.feature}
+        message={modalState.message}
+        used={modalState.used}
+        limit={modalState.limit}
+      />
     </div>
   );
 }

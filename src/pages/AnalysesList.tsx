@@ -9,6 +9,7 @@ import type { AnalysisSummary } from "../types";
 import { SkeletonAnalysisCard } from "../components/Skeleton";
 import { ConfirmModal } from "../components/ConfirmModal"; // ← only new import
 import { useToast } from "../context/ToastContext";
+import { Footer } from "../components/Footer";
 
 export function AnalysesList() {
   const navigate = useNavigate();
@@ -223,6 +224,23 @@ export function AnalysesList() {
       <main className="dashboard-main">
         <div className="dashboard-header">
           <div>
+            <a onClick={() => navigate("/dashboard")} className="add-job-back">
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back to Dashboard
+            </a>
             <h2>My Analyses 📊</h2>
             <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
               View all your resume analyses
@@ -526,6 +544,7 @@ export function AnalysesList() {
             </div>
           )}
         </div>
+        <Footer />
       </main>
 
       {/* NEW: Confirm Modal */}

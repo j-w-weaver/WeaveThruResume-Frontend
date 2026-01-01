@@ -370,4 +370,8 @@
     flex-direction: column;
     gap: 12px;
   }
+
+  .hide-date-mobile {
+    display: none;
+  }
 }

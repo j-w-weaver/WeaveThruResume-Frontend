@@ -7,6 +7,8 @@ import analysisService from "../services/analysisService";
 import { getErrorMessage } from "../utils/api";
 import type { Resume, Job, AnalysisSummary } from "../types";
 import { SkeletonStatCard, SkeletonAnalysisCard } from "../components/Skeleton";
+import { UsageStats } from "../components/UsageStats";
+import { Footer } from "../components/Footer";
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -228,30 +230,8 @@ export function Dashboard() {
 
           {/* Stats Section */}
           <div className="dashboard-section">
-            <h2 className="dashboard-section-title">Your Progress</h2>
-
-            {isLoading ? (
-              <div className="stats-grid">
-                <SkeletonStatCard />
-                <SkeletonStatCard />
-                <SkeletonStatCard />
-              </div>
-            ) : (
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-number blue">{resumes.length}</div>
-                  <div className="stat-label">Resumes Uploaded</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-number purple">{jobs.length}</div>
-                  <div className="stat-label">Jobs Tracked</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-number green">{analyses.length}</div>
-                  <div className="stat-label">AI Analyses</div>
-                </div>
-              </div>
-            )}
+            <h2 className="dashboard-section-title">Your Usage</h2>
+            <UsageStats />
           </div>
 
           {/* Recent Analyses Section */}
@@ -343,6 +323,7 @@ export function Dashboard() {
             </div>
           ) : null}
         </div>
+        <Footer />
       </main>
     </div>
   );

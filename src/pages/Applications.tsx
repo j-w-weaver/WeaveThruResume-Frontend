@@ -213,8 +213,8 @@ export function Applications() {
         </div>
       </aside>
 
-      <main className="applications-main">
-        <div className="applications-header">
+      <main className="dashboard-main">
+        <div className="dashboard-header">
           <div>
             <a onClick={() => navigate("/dashboard")} className="add-job-back">
               <svg

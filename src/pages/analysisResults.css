@@ -22,7 +22,7 @@ code /* Analysis Results Page */
   gap: 8px;
   color: #9a9891;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 16px;
   transition: color 0.2s;
   cursor: pointer;
@@ -45,7 +45,7 @@ code /* Analysis Results Page */
   flex-wrap: wrap;
   gap: 24px;
   color: #9a9891;
-  font-size: 14px;
+  font-size: 15px;
   margin-bottom: 16px;
 }
 
@@ -103,7 +103,7 @@ code /* Analysis Results Page */
 
 .match-score-label {
   color: #bfdbfe;
-  font-size: 14px;
+  font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 16px;
@@ -120,7 +120,7 @@ code /* Analysis Results Page */
 
 .match-score-description {
   color: #bfdbfe;
-  font-size: 16px;
+  font-size: 17px;
 }
 
 /* Stats Grid */
@@ -161,7 +161,7 @@ code /* Analysis Results Page */
 
 .analysis-stat-label {
   color: #9a9891;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -217,7 +217,7 @@ code /* Analysis Results Page */
 }
 
 .gap-category {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #f7f4ed;
   background: #1e2533;
@@ -228,7 +228,7 @@ code /* Analysis Results Page */
 .gap-importance {
   padding: 4px 10px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -251,7 +251,7 @@ code /* Analysis Results Page */
 
 .gap-text {
   color: #c9c5ba;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -317,7 +317,7 @@ code /* Analysis Results Page */
 }
 
 .recommendation-section {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   color: #9a9891;
   text-transform: uppercase;
@@ -327,7 +327,7 @@ code /* Analysis Results Page */
 
 .recommendation-instruction {
   color: #f7f4ed;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   margin-bottom: 12px;
 }
@@ -340,7 +340,7 @@ code /* Analysis Results Page */
 }
 
 .recommendation-suggested-label {
-  font-size: 11px;
+  font-size: 13px;
   color: #9a9891;
   margin-bottom: 6px;
   font-weight: 500;
@@ -348,7 +348,7 @@ code /* Analysis Results Page */
 
 .recommendation-suggested-text {
   color: #5b9fff;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
   font-family: "Courier New", monospace;
 }

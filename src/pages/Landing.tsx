@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Footer } from "../components/Footer";
 
 export function Landing() {
   const navigate = useNavigate();
@@ -208,68 +209,7 @@ export function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <div className="nav-logo">
-                <div className="nav-icon">FR</div>
-                <span className="nav-brand">Fluid Resume</span>
-              </div>
-              <p>AI-powered resume optimization</p>
-            </div>
-
-            <div className="footer-section">
-              <h4>Product</h4>
-              <ul>
-                <li>
-                  <a href="#features">Features</a>
-                </li>
-                <li>
-                  <a href="#pricing">Pricing</a>
-                </li>
-                <li>
-                  <a href="#faq">FAQ</a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="footer-section">
-              <h4>Company</h4>
-              <ul>
-                <li>
-                  <a href="#">About</a>
-                </li>
-                <li>
-                  <a href="#">Blog</a>
-                </li>
-                <li>
-                  <a href="#">Careers</a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="footer-section">
-              <h4>Legal</h4>
-              <ul>
-                <li>
-                  <a href="#">Privacy</a>
-                </li>
-                <li>
-                  <a href="#">Terms</a>
-                </li>
-                <li>
-                  <a href="#">Security</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="footer-bottom">
-            © 2024 WeavThru Resume. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

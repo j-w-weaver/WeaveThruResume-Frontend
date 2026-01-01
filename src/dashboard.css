@@ -38,6 +38,22 @@
   overflow-y: auto;
 }
 
+/* .add-job-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #9a9891;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 16px;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.add-job-back:hover {
+  color: #f7f4ed;
+} */
+
 .sidebar-nav-item {
   display: flex;
   align-items: center;
@@ -381,6 +397,10 @@
   background-size: 200% 100%;
   animation: skeleton-loading 2s ease-in-out infinite;
   border-radius: 4px;
+}
+
+.app-footer {
+  margin-left: 0; /* Footer spans full width under main content */
 }
 
 /* Optional: More dramatic blue shimmer */

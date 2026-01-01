@@ -10,6 +10,10 @@ import analysisService from "../services/analysisService";
 import { getErrorMessage } from "../utils/api";
 import type { Resume, Job } from "../types";
 import { Skeleton } from "../components/Skeleton";
+import { UpgradeModal } from "../components/UpgradeModal";
+import { useUpgradeModal } from "../hooks/useUpgradeModal";
+import { useToast } from "../context/ToastContext";
+import { Footer } from "../components/Footer";
 
 // Skeleton only for the main content area
 function ContentSkeleton() {
@@ -60,6 +64,8 @@ export function CreateAnalysis() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { user, logout } = useAuth();
+  const { showToast } = useToast();
+  const { modalState, handleApiError, closeModal } = useUpgradeModal();
 
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -144,9 +150,16 @@ export function CreateAnalysis() {
         industry: formData.industry,
         specialization: formData.specialization || undefined,
       });
-
+      showToast("Analysis created successfully!", "success");
       navigate(`/analysis/${response.id}`);
     } catch (err) {
+      // ✅ Check if it's a 402 upgrade error
+      if (handleApiError(err)) {
+        setIsProcessing(false);
+        return; // Modal will show, don't show error
+      }
+
+      // Regular error handling
       setError(getErrorMessage(err));
     } finally {
       setIsProcessing(false);
@@ -554,7 +567,16 @@ export function CreateAnalysis() {
             </div>
           </div>
         )}
+        <Footer />
       </main>
+      <UpgradeModal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        feature={modalState.feature}
+        message={modalState.message}
+        used={modalState.used}
+        limit={modalState.limit}
+      />
     </div>
   );
 }

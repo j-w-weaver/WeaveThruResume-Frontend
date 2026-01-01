@@ -24,7 +24,7 @@
   max-height: 90vh;
   overflow-y: auto;
   z-index: 9999;
-  animation: slideUp 0.3s ease-out;
+  animation: modalSlideIn 0.3s ease-out;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
@@ -37,13 +37,13 @@
   }
 }
 
-@keyframes slideUp {
+@keyframes modalSlideIn {
   from {
-    transform: translate(-50%, -45%);
+    transform: translate(-50%, -50%) scale(0.9);
     opacity: 0;
   }
   to {
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
 }

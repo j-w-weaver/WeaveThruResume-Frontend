@@ -9,6 +9,7 @@ import { getErrorMessage } from "../utils/api";
 import type { Job } from "../types";
 import { Skeleton } from "../components/Skeleton";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { Footer } from "../components/Footer";
 
 function ContentSkeleton() {
   return (
@@ -296,7 +297,10 @@ export function JobDetail() {
                     fontWeight: "600",
                   }}
                 >
-                  Applied {formatDate(job.appliedDate)}
+                  Applied{" "}
+                  <span className="hide-date-mobile">
+                    {formatDate(job.appliedDate)}
+                  </span>
                 </span>
               )}
             </h1>
@@ -503,8 +507,8 @@ export function JobDetail() {
             </div>
           )
         )}
+        <Footer />
       </main>
-
       {/* Confirm Delete Modal */}
       <ConfirmModal
         isOpen={showDeleteModal}

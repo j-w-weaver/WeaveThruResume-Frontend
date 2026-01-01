@@ -6,11 +6,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import jobService from "../services/jobService";
 import { getErrorMessage } from "../utils/api";
+import { UpgradeModal } from "../components/UpgradeModal";
+import { useUpgradeModal } from "../hooks/useUpgradeModal";
+import { Footer } from "../components/Footer";
 
 export function AddJob() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { modalState, handleApiError, closeModal } = useUpgradeModal();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -78,6 +83,10 @@ export function AddJob() {
         navigate("/jobs");
       }, 1500);
     } catch (err) {
+      if (handleApiError(err)) {
+        setIsSubmitting(false);
+        return; // Modal will show
+      }
       setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
@@ -338,7 +347,16 @@ export function AddJob() {
             </ul>
           </div>
         </div>
+        <Footer />
       </main>
+      <UpgradeModal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        feature={modalState.feature}
+        message={modalState.message}
+        used={modalState.used}
+        limit={modalState.limit}
+      />
     </div>
   );
 }

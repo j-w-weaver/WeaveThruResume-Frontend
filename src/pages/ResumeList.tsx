@@ -218,6 +218,23 @@ export function ResumeList() {
         {/* <div className="resume-list-container"> */}
         <div className="dashboard-header">
           <div>
+            <a onClick={() => navigate("/dashboard")} className="add-job-back">
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back to Dashboard
+            </a>
             <h2>My Resumes 📄</h2>
             <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
               Manage your uploaded resumes

@@ -173,7 +173,7 @@ export function UpgradeModal({
         </div>
 
         <p className="upgrade-modal-footer">
-          Starting at just $8.33/month • Cancel anytime
+          Starting at just $12.99/month • Cancel anytime
         </p>
       </div>
     </>

@@ -8,6 +8,7 @@ import { getErrorMessage } from "../utils/api";
 import type { Job } from "../types";
 import { Skeleton } from "../components/Skeleton";
 import { useToast } from "../context/ToastContext";
+import { Footer } from "../components/Footer";
 
 function SkeletonJobCard() {
   return (
@@ -302,6 +303,23 @@ export function JobList() {
       <main className="job-list-main">
         <div className="dashboard-header">
           <div>
+            <a onClick={() => navigate("/dashboard")} className="add-job-back">
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back to Dashboard
+            </a>
             <h2>Job Descriptions 💼</h2>
             <p style={{ color: "#9a9891", fontSize: "15px", marginTop: "6px" }}>
               Manage and analyze job postings
@@ -523,6 +541,7 @@ export function JobList() {
             </div>
           )}
         </div>
+        <Footer />
       </main>
     </div>
   );

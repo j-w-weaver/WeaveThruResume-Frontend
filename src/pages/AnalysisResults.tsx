@@ -11,6 +11,7 @@ import { ResumeEditorModal } from "../components/ResumeEditorModal";
 import resumeService from "../services/resumeService";
 import { Skeleton } from "../components/Skeleton";
 import { SyncfusionResumeEditor } from "../components/SyncfusionResumeEditor";
+import { Footer } from "../components/Footer";
 
 // Only content area uses skeleton
 function ContentSkeleton() {
@@ -760,6 +761,7 @@ export function AnalysisResults() {
           onExport={handleExportFromSyncfusion}
         />
       </main>
+      <Footer />
     </div>
   );
 }

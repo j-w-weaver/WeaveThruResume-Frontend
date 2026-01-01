@@ -10,6 +10,7 @@ import "@syncfusion/ej2-react-documenteditor/styles/material.css";
 import "./syncfusionResumeEditor.css";
 import { useRef, useEffect, useState } from "react";
 import {
+  colorProperty,
   DocumentEditorContainerComponent,
   Toolbar,
 } from "@syncfusion/ej2-react-documenteditor";
@@ -268,7 +269,10 @@ export function SyncfusionResumeEditor({
             </div>
 
             <div className="syncfusion-editor-footer">
-              <div className="syncfusion-editor-info">
+              <div
+                className="syncfusion-editor-info"
+                style={{ color: "white", fontSize: isMobile ? "10px" : "15px" }}
+              >
                 💡 AI recommendations have been added at the end of the
                 document.
               </div>
